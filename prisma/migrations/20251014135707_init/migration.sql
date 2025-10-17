@@ -43,8 +43,8 @@ CREATE TABLE "public"."Patient" (
     "service_consent" BOOLEAN NOT NULL,
     "medical_consent" BOOLEAN NOT NULL,
     "photo_url" TEXT,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Patient_pkey" PRIMARY KEY ("uid")
 );
@@ -61,10 +61,10 @@ CREATE TABLE "public"."Doctor" (
     "address" TEXT NOT NULL,
     "department" TEXT,
     "photo_url" TEXT,
-    "avalability_status" TEXT,
+    "availability_status" TEXT,
     "type" "public"."JobType" NOT NULL DEFAULT 'FULL',
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Doctor_pkey" PRIMARY KEY ("uid")
 );
@@ -76,8 +76,8 @@ CREATE TABLE "public"."WorkingDays" (
     "day" TEXT NOT NULL,
     "start_time" TEXT NOT NULL,
     "close_time" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "WorkingDays_pkey" PRIMARY KEY ("id")
 );
@@ -95,8 +95,8 @@ CREATE TABLE "public"."Staff" (
     "photo_url" TEXT,
     "role" "public"."Role" NOT NULL,
     "status" "public"."Status" NOT NULL DEFAULT 'ACTIVE',
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Staff_pkey" PRIMARY KEY ("uid")
 );

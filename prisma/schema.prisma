@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+   previewFeatures = ["fullTextSearchPostgres"]
 }
 
 datasource db {
@@ -79,8 +80,8 @@ model Patient {
   payments                 Payment[]
   ratings                  Rating[]
 
-  createdAt                DateTime          @default(now())
-  updatedAt                DateTime          @updatedAt
+  created_at                DateTime          @default(now())
+  updated_at                DateTime          @updatedAt
 }
 
 model Doctor {
@@ -94,7 +95,7 @@ model Doctor {
   address                  String
   department               String?
   photo_url                String?
-  avalability_status       String?
+  availability_status       String?
 
   type                     JobType @default(FULL)
   working_days             WorkingDays[]
@@ -102,8 +103,8 @@ model Doctor {
   ratings                  Rating[]
   diagnosis                Diagnosis[]
 
-  createdAt                DateTime          @default(now())
-  updatedAt                DateTime          @updatedAt
+  created_at                DateTime          @default(now())
+  updated_at                DateTime          @updatedAt
 }
 
 model WorkingDays {
@@ -115,8 +116,8 @@ model WorkingDays {
 
   doctor    Doctor  @relation(fields: [doctor_id], references: [uid], onDelete: Cascade)
   
-  createdAt                DateTime          @default(now())
-  updatedAt                DateTime          @updatedAt
+  created_at                DateTime          @default(now())
+  updated_at                DateTime          @updatedAt
 }
 
 model Staff {
@@ -133,8 +134,8 @@ model Staff {
   role                     Role
   status                   Status @default(ACTIVE)
 
-  createdAt                DateTime          @default(now())
-  updatedAt                DateTime          @updatedAt
+  created_at                DateTime          @default(now())
+  updated_at                DateTime          @updatedAt
 }
 
 model Appointment {

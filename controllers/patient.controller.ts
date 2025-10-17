@@ -17,6 +17,33 @@ patientRouter.get("/information", async (req, res, next) => {
   }
 });
 
+patientRouter.get("/statistic", async (req, res, next) => {
+  try {
+    const uid = req.uid as string;
+    const result = await patientService.getPatientDashboardStatistics(uid);
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
+patientRouter.get("/appointments", async (req, res, next) => {
+  try {
+    const { page, limit, query } = req.query;
+    console.log(page);
+    const uid = req.uid as string;
+    const result = await patientService.getPatientAppointments(
+      uid,
+      query as string,
+      Number(page),
+      Number(limit)
+    );
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
 patientRouter.post("/upsert", async (req, res, next) => {
   try {
     const {

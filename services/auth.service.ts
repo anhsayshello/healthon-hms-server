@@ -45,13 +45,13 @@ const authService = {
         default:
           throw new AppError(`Unknown role: ${role}`, 400);
       }
-      return { idToken, role, user };
+      return { idToken, role, data: user };
     }
 
     return {
       idToken: idToken,
       role: null,
-      user: null,
+      data: null,
     };
   },
 };

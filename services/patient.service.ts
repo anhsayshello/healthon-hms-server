@@ -85,7 +85,6 @@ const patientService = {
       },
       take: 6,
     });
-    console.log(availableDoctor, "available doctor");
 
     return {
       data: patient,
@@ -178,7 +177,7 @@ const patientService = {
           },
         },
       },
-      orderBy: { appointment_date: "desc" },
+      orderBy: { created_at: "desc" },
       skip: SKIP,
       take: LIMIT,
     });

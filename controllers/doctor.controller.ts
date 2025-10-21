@@ -15,4 +15,14 @@ doctorRouter.get("/", async (req, res, next) => {
   }
 });
 
+doctorRouter.get("/statistic", async (req, res, next) => {
+  try {
+    const uid = req.uid as string;
+    const result = await doctorService.getDoctorDashboardStatistics(uid);
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default doctorRouter;

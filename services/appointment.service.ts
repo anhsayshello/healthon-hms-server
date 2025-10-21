@@ -5,6 +5,7 @@ import { initializeMonthlyData, isValidStatus } from "../utils/utils";
 import AppError from "../utils/app-error";
 import prisma from "../config/db";
 import { getAuth } from "firebase-admin/auth";
+import getRole from "../utils/getRole";
 
 const appoitmentService = {
   async processAppointments(appointments: Appointment[]) {
@@ -51,26 +52,8 @@ const appoitmentService = {
     const data = await prisma.appointment.findUnique({
       where: { id },
       include: {
-        doctor: {
-          select: {
-            uid: true,
-            first_name: true,
-            last_name: true,
-            specialization: true,
-            photo_url: true,
-          },
-        },
-        patient: {
-          select: {
-            uid: true,
-            first_name: true,
-            last_name: true,
-            date_of_birth: true,
-            gender: true,
-            phone: true,
-            address: true,
-          },
-        },
+        doctor: true,
+        patient: true,
       },
     });
 
@@ -90,7 +73,6 @@ const appoitmentService = {
     note?: string
   ) {
     const targetDate = new Date(appointment_date);
-    console.log(targetDate, "target");
     const startOfDay = new Date(targetDate.setHours(0, 0, 0, 0));
     const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999));
 
@@ -152,8 +134,7 @@ const appoitmentService = {
     status: AppointmentStatus,
     reason?: string
   ) {
-    const currentUser = await getAuth().getUser(uid);
-    const role = currentUser.customClaims?.role;
+    const { role, isPatient, isDoctor, isAdmin } = await getRole(uid);
 
     if (!role) {
       throw new AppError("User role not found", 403);
@@ -171,7 +152,7 @@ const appoitmentService = {
 
     let data = null;
 
-    if (role === Role.PATIENT) {
+    if (isPatient) {
       if (appointment.patient_id !== uid) {
         throw new AppError(
           "You are not authorized to cancel this appointment.",
@@ -190,7 +171,7 @@ const appoitmentService = {
           reason: reason ?? null,
         },
       });
-    } else if (role === Role.DOCTOR) {
+    } else if (isDoctor) {
       if (appointment.doctor_id !== uid) {
         throw new AppError(
           "You are not authorized to update this appointment.",
@@ -205,7 +186,7 @@ const appoitmentService = {
           reason: reason ?? null,
         },
       });
-    } else if (role === Role.ADMIN) {
+    } else if (isAdmin) {
       data = await prisma.appointment.update({
         where: { id },
         data: {

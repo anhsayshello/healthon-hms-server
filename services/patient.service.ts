@@ -1,11 +1,11 @@
 import { getAuth } from "firebase-admin/auth";
 import AppError from "../utils/app-error";
 import prisma from "../config/db";
-import admin from "../config/firebase";
 import { Role } from "@prisma/client";
 import type { Patient } from "../types/patient.type";
 import appoitmentService from "./appointment.service";
 import getToday from "../utils/utils";
+import app from "../config/firebase";
 
 const patientService = {
   async getPatientInfomation(uid: string) {
@@ -51,8 +51,8 @@ const patientService = {
             uid: true,
             first_name: true,
             last_name: true,
-            photo_url: true,
             gender: true,
+            photo_url: true,
           },
         },
       },
@@ -64,7 +64,7 @@ const patientService = {
 
     const last5Records = appointments.slice(0, 5);
     const today = getToday();
-    const availableDoctor = await prisma.doctor.findMany({
+    const availableDoctors = await prisma.doctor.findMany({
       select: {
         uid: true,
         first_name: true,
@@ -77,7 +77,7 @@ const patientService = {
         working_days: {
           some: {
             day: {
-              equals: today as string,
+              equals: today,
               mode: "insensitive",
             },
           },
@@ -85,13 +85,14 @@ const patientService = {
       },
       take: 6,
     });
+    const totalAppointments = appointments.length;
 
     return {
       data: patient,
       appointmentCounts,
       last5Records,
-      totalAppointments: appointments.length,
-      availableDoctor,
+      totalAppointments,
+      availableDoctors,
       monthlyData,
     };
   },
@@ -228,7 +229,7 @@ const patientService = {
 
     const existingPatient = await prisma.patient.findUnique({ where: { uid } });
     if (!existingPatient && !user?.customClaims?.role) {
-      await admin.auth().setCustomUserClaims(uid, { role: Role.PATIENT });
+      await getAuth(app).setCustomUserClaims(uid, { role: Role.PATIENT });
     }
 
     const data = {

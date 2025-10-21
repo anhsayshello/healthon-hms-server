@@ -1,7 +1,6 @@
 import { Router } from "express";
 import patientService from "../services/patient.service";
 import { authMiddlewares } from "../middlewares";
-import type { Patient } from "../types/patient.type";
 
 const patientRouter = Router();
 

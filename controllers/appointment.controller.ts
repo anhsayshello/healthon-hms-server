@@ -18,11 +18,11 @@ appointmentRouter.get("/:id", async (req, res, next) => {
 
 appointmentRouter.post("/", async (req, res, next) => {
   try {
-    const uid = req.uid;
+    const uid = req.uid as string;
     const { doctor_id, type, appointment_date, time, note } = req.body;
     console.log(req.body, "body");
     const result = await appoitmentService.createNewAppointment(
-      uid as string,
+      uid,
       doctor_id,
       appointment_date,
       time,
@@ -37,11 +37,11 @@ appointmentRouter.post("/", async (req, res, next) => {
 
 appointmentRouter.post("/:id", async (req, res, next) => {
   try {
-    const uid = req.uid;
+    const uid = req.uid as string;
     const { id } = req.params;
     const { status, reason } = req.body;
     const result = await appoitmentService.updateAppointmentById(
-      uid as string,
+      uid,
       Number(id),
       status,
       reason

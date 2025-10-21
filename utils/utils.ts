@@ -40,5 +40,5 @@ export const weekday = [
 export default function getToday() {
   const today = new Date().getDay();
 
-  return weekday[today];
+  return weekday[today] as string;
 }

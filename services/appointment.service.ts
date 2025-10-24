@@ -4,7 +4,6 @@ import { getMonth, format, startOfYear, endOfMonth } from "date-fns";
 import { initializeMonthlyData, isValidStatus } from "../utils/utils";
 import AppError from "../utils/app-error";
 import prisma from "../config/db";
-import { getAuth } from "firebase-admin/auth";
 import getRole from "../utils/getRole";
 
 const appoitmentService = {
@@ -98,9 +97,11 @@ const appoitmentService = {
       select: { first_name: true, last_name: true, working_days: true },
     });
 
-    const dayName = new Date(appointment_date).toLocaleDateString("en-US", {
-      weekday: "long",
-    });
+    const dayName = new Date(appointment_date)
+      .toLocaleDateString("en-US", {
+        weekday: "long",
+      })
+      .toUpperCase();
 
     const isAvailable = doctor?.working_days.some((item) => {
       console.log(appointment_date);

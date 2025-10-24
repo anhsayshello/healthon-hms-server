@@ -1,11 +1,11 @@
 import { getAuth } from "firebase-admin/auth";
 import AppError from "../utils/app-error";
 import prisma from "../config/db";
-import { Role } from "@prisma/client";
-import type { Patient } from "../types/patient.type";
+import { Role, type Patient } from "@prisma/client";
 import appoitmentService from "./appointment.service";
 import getToday from "../utils/utils";
 import app from "../config/firebase";
+import getRole from "../utils/getRole";
 
 const patientService = {
   async getPatientInfomation(uid: string) {
@@ -20,71 +20,71 @@ const patientService = {
     };
   },
   async getPatientDashboardStatistics(uid: string) {
-    const patient = await prisma.patient.findUnique({
-      where: { uid },
-      select: {
-        uid: true,
-        first_name: true,
-        last_name: true,
-        gender: true,
-        photo_url: true,
-      },
-    });
-    if (!patient) {
-      throw new AppError("Patient data not found", 404);
+    const { isPatient } = await getRole(uid);
+    if (!isPatient) {
+      throw new AppError("You are not authorized to access this resource", 403);
     }
 
-    const appointments = await prisma.appointment.findMany({
-      where: { patient_id: uid },
-      include: {
-        doctor: {
-          select: {
-            uid: true,
-            first_name: true,
-            last_name: true,
-            photo_url: true,
-            specialization: true,
+    const today = getToday();
+    const [patient, appointments, availableDoctors] = await Promise.all([
+      prisma.patient.findUnique({
+        where: { uid },
+        select: {
+          uid: true,
+          first_name: true,
+          last_name: true,
+          gender: true,
+          photo_url: true,
+        },
+      }),
+      prisma.appointment.findMany({
+        where: { patient_id: uid },
+        include: {
+          doctor: {
+            select: {
+              uid: true,
+              first_name: true,
+              last_name: true,
+              photo_url: true,
+              specialization: true,
+            },
+          },
+          patient: {
+            select: {
+              uid: true,
+              first_name: true,
+              last_name: true,
+              gender: true,
+              photo_url: true,
+            },
           },
         },
-        patient: {
-          select: {
-            uid: true,
-            first_name: true,
-            last_name: true,
-            gender: true,
-            photo_url: true,
+        orderBy: { created_at: "desc" },
+      }),
+      prisma.doctor.findMany({
+        select: {
+          uid: true,
+          first_name: true,
+          last_name: true,
+          photo_url: true,
+          specialization: true,
+          working_days: true,
+        },
+        where: {
+          working_days: {
+            some: {
+              day: today,
+            },
           },
         },
-      },
-      orderBy: { appointment_date: "desc" },
-    });
+        take: 6,
+      }),
+    ]);
 
     const { appointmentCounts, monthlyData } =
       await appoitmentService.processAppointments(appointments);
 
     const last5Records = appointments.slice(0, 5);
-    const today = getToday();
-    const availableDoctors = await prisma.doctor.findMany({
-      select: {
-        uid: true,
-        first_name: true,
-        last_name: true,
-        photo_url: true,
-        specialization: true,
-        working_days: true,
-      },
-      where: {
-        working_days: {
-          some: {
-            day: {
-              equals: today,
-              mode: "insensitive",
-            },
-          },
-        },
-      },
-      take: 6,
-    });
     const totalAppointments = appointments.length;
 
     return {
@@ -197,29 +197,29 @@ const patientService = {
     };
   },
 
-  async upsertPatient({
-    uid,
-    email,
-    first_name,
-    last_name,
-    date_of_birth,
-    gender,
-    phone,
-    marital_status,
-    address,
-    emergency_contact_name,
-    emergency_contact_number,
-    relation,
-    blood_group,
-    allergies,
-    medical_conditions,
-    medical_history,
-    insurance_provider,
-    insurance_number,
-    privacy_consent,
-    service_consent,
-    medical_consent,
-  }: Patient) {
+  async upsertPatient(uid: string, props: Omit<Patient, "uid">) {
+    const {
+      email,
+      first_name,
+      last_name,
+      date_of_birth,
+      gender,
+      phone,
+      marital_status,
+      address,
+      emergency_contact_name,
+      emergency_contact_number,
+      relation,
+      blood_group,
+      allergies,
+      medical_conditions,
+      medical_history,
+      insurance_provider,
+      insurance_number,
+      privacy_consent,
+      service_consent,
+      medical_consent,
+    } = props;
     let user;
     try {
       user = await getAuth().getUser(uid);

@@ -4,7 +4,7 @@ import appoitmentService from "../services/appointment.service";
 
 const appointmentRouter = Router();
 
-appointmentRouter.use(authMiddlewares);
+appointmentRouter.use(...authMiddlewares);
 
 appointmentRouter.get("/:id", async (req, res, next) => {
   try {

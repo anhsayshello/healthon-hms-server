@@ -1,6 +1,7 @@
 import { Router } from "express";
 import patientService from "../services/patient.service";
 import { authMiddlewares } from "../middlewares";
+import type { Patient } from "@prisma/client";
 
 const patientRouter = Router();
 
@@ -45,53 +46,10 @@ patientRouter.get("/appointments", async (req, res, next) => {
 
 patientRouter.post("/upsert", async (req, res, next) => {
   try {
-    const {
-      email,
-      first_name,
-      last_name,
-      date_of_birth,
-      gender,
-      phone,
-      marital_status,
-      address,
-      emergency_contact_name,
-      emergency_contact_number,
-      relation,
-      blood_group,
-      allergies,
-      medical_conditions,
-      medical_history,
-      insurance_provider,
-      insurance_number,
-      privacy_consent,
-      service_consent,
-      medical_consent,
-    } = req.body;
+    const props: Omit<Patient, "uid"> = req.body;
 
     const uid = req.uid as string;
-    const result = await patientService.upsertPatient({
-      uid,
-      email,
-      first_name,
-      last_name,
-      date_of_birth,
-      gender,
-      phone,
-      marital_status,
-      address,
-      emergency_contact_name,
-      emergency_contact_number,
-      relation,
-      blood_group,
-      allergies,
-      medical_conditions,
-      medical_history,
-      insurance_provider,
-      insurance_number,
-      privacy_consent,
-      service_consent,
-      medical_consent,
-    });
+    const result = await patientService.upsertPatient(uid, props);
     return res.status(200).json(result);
   } catch (error) {
     next(error);

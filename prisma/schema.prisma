@@ -40,6 +40,16 @@ enum AppointmentStatus  {
   COMPLETED
 }
 
+enum Weekday {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
 enum PaymentMethod {
   CASH
   CARD
@@ -110,7 +120,7 @@ model Doctor {
 model WorkingDays {
   id                       Int @id @default(autoincrement())
   doctor_id                String
-  day                      String
+  day                      Weekday
   start_time               String
   close_time               String
 

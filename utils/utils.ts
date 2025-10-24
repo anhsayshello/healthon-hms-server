@@ -1,4 +1,4 @@
-import type { AppointmentStatus } from "@prisma/client";
+import { Weekday, type AppointmentStatus } from "@prisma/client";
 import { format, getMonth } from "date-fns";
 
 export const getTokenFrom = (request) => {
@@ -28,17 +28,18 @@ export const initializeMonthlyData = () => {
   return months;
 };
 
-export const weekday = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
 export default function getToday() {
-  const today = new Date().getDay();
+  const dayIndex = new Date().getDay();
 
-  return weekday[today] as string;
+  const map: Weekday[] = [
+    Weekday.SUNDAY,
+    Weekday.MONDAY,
+    Weekday.TUESDAY,
+    Weekday.WEDNESDAY,
+    Weekday.THURSDAY,
+    Weekday.FRIDAY,
+    Weekday.SATURDAY,
+  ];
+
+  return map[dayIndex] as Weekday;
 }

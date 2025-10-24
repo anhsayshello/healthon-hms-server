@@ -1,7 +1,6 @@
-import { AppointmentStatus, Role } from "@prisma/client";
+import { AppointmentStatus, Role, Weekday } from "@prisma/client";
 import { fakerDE as faker } from "@faker-js/faker";
 import prisma from "../config/db";
-import { weekday } from "../utils/utils";
 
 async function seed() {
   console.log("Seeding data...");
@@ -30,7 +29,9 @@ async function seed() {
   // Create 10 doctors
   const doctors = [];
   const randomDay = (min: number, max: number) => {
-    return weekday[Math.floor(Math.random() * (max - min)) + min];
+    const values = Object.values(Weekday);
+    const randomIndex = Math.floor(Math.random() * (max - min)) + min;
+    return values[randomIndex];
   };
 
   for (let i = 0; i < 10; i++) {
@@ -50,12 +51,12 @@ async function seed() {
         working_days: {
           create: [
             {
-              day: randomDay(0, 4) as string,
+              day: randomDay(0, 4) as Weekday,
               start_time: "08:00",
               close_time: "17:00",
             },
             {
-              day: randomDay(4, 7) as string,
+              day: randomDay(4, 7) as Weekday,
               start_time: "08:00",
               close_time: "17:00",
             },

@@ -14,6 +14,9 @@ CREATE TYPE "public"."Gender" AS ENUM ('MALE', 'FEMALE');
 CREATE TYPE "public"."AppointmentStatus" AS ENUM ('PENDING', 'SCHEDULED', 'CANCELLED', 'COMPLETED');
 
 -- CreateEnum
+CREATE TYPE "public"."Weekday" AS ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY');
+
+-- CreateEnum
 CREATE TYPE "public"."PaymentMethod" AS ENUM ('CASH', 'CARD');
 
 -- CreateEnum
@@ -73,7 +76,7 @@ CREATE TABLE "public"."Doctor" (
 CREATE TABLE "public"."WorkingDays" (
     "id" SERIAL NOT NULL,
     "doctor_id" TEXT NOT NULL,
-    "day" TEXT NOT NULL,
+    "day" "public"."Weekday" NOT NULL,
     "start_time" TEXT NOT NULL,
     "close_time" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

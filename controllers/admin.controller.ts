@@ -1,16 +1,25 @@
 import { Router } from "express";
 import { authMiddlewares } from "../middlewares";
-import doctorService from "../services/doctor.service";
 import adminService from "../services/admin.service";
+import type { Doctor, Weekday } from "@prisma/client";
 
 const adminRouter = Router();
 
 adminRouter.use(...authMiddlewares);
 
-adminRouter.get("/", async (req, res, next) => {
+adminRouter.get("/users", async (req, res, next) => {
   try {
-    // const uid = req?.uid as string;
-    const result = await adminService.getUsers();
+    const result = await adminService.getFirebaseUsers();
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.get("/:uid", async (req, res, next) => {
+  try {
+    const { uid } = req.params;
+    const result = await adminService.getUserById(uid);
     return res.status(200).json(result);
   } catch (error) {
     next(error);
@@ -22,6 +31,23 @@ adminRouter.post("/", async (req, res, next) => {
     const { role } = req.body;
     const uid = req?.uid as string;
     const result = await adminService.setUserRole(uid, role);
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.post("/create-doctor", async (req, res, next) => {
+  try {
+    const { working_days, doctor } = req.body as {
+      working_days: Weekday[];
+      doctor: Omit<
+        Doctor,
+        "uid" | "availability_status" | "created_at" | "updated_at"
+      >;
+    };
+    console.log("working_days received:", working_days);
+    const result = await adminService.createNewDoctor(working_days, doctor);
     return res.status(200).json(result);
   } catch (error) {
     next(error);

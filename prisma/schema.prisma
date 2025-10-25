@@ -159,7 +159,7 @@ model Appointment {
   note             String?
 
   patient          Patient          @relation(fields: [patient_id], references: [uid], onDelete: Cascade)
-  doctor           Doctor           @relation(fields: [doctor_id], references: [uid])
+  doctor           Doctor           @relation(fields: [doctor_id], references: [uid], onDelete: Cascade)
 
   bills            Payment[]
   medical          MedicalRecords[]

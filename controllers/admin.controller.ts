@@ -9,7 +9,8 @@ adminRouter.use(...authMiddlewares);
 
 adminRouter.get("/users", async (req, res, next) => {
   try {
-    const result = await adminService.getFirebaseUsers();
+    const nextPageToken = req.query.nextPageToken as string | undefined;
+    const result = await adminService.getFirebaseUsers(nextPageToken);
     return res.status(200).json(result);
   } catch (error) {
     next(error);
@@ -31,6 +32,16 @@ adminRouter.post("/", async (req, res, next) => {
     const { role } = req.body;
     const uid = req?.uid as string;
     const result = await adminService.setUserRole(uid, role);
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.delete("/:uid", async (req, res, next) => {
+  try {
+    const { uid } = req.params;
+    const result = await adminService.deleteUserById(uid);
     return res.status(200).json(result);
   } catch (error) {
     next(error);

@@ -11,6 +11,47 @@ const adminService = {
     await getAuth(app).setCustomUserClaims(uid, { role });
     return { message: `Assigned role '${role}' to user ${uid}` };
   },
+  async getFirebaseUsers(nextPageToken?: string) {
+    const listUsersResult = await getAuth(app).listUsers(10, nextPageToken);
+    const users = listUsersResult.users;
+
+    return {
+      data: users,
+      nextPageToken: listUsersResult.pageToken,
+    };
+  },
+  async deleteUserById(uid: string) {
+    try {
+      const user = await getAuth(app).getUser(uid);
+      const role = user.customClaims?.role as Role;
+
+      if (role) {
+        switch (role) {
+          case Role.PATIENT:
+            await prisma.patient.deleteMany({ where: { uid } });
+            break;
+          case Role.DOCTOR:
+            await prisma.doctor.deleteMany({ where: { uid } });
+            break;
+          case Role.ADMIN:
+          case Role.NURSE:
+          case Role.LAB_TECHNICIAN:
+          case Role.CASHIER:
+            await prisma.staff.deleteMany({ where: { uid } });
+            break;
+          default:
+            break;
+        }
+      }
+
+      await getAuth(app).deleteUser(uid);
+
+      return { message: `User ${uid} deleted successfully` };
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      throw new AppError("Failed to delete user", 400);
+    }
+  },
   async getUserById(uid: string) {
     const user = await getAuth(app).getUser(uid);
     const role = user.customClaims?.role;
@@ -43,14 +84,6 @@ const adminService = {
     }
 
     return { data };
-  },
-  async getFirebaseUsers() {
-    const listAllUsers = await getAuth(app).listUsers(1000);
-    const allUsers = listAllUsers.users;
-
-    return {
-      allUsers,
-    };
   },
   async createNewDoctor(
     working_days: Weekday[],

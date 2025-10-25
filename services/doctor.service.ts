@@ -6,7 +6,7 @@ import AppError from "../utils/app-error";
 import getRole from "../utils/getRole";
 
 const doctorService = {
-  async getDoctors() {
+  async getAllDoctors() {
     const data = await prisma.doctor.findMany({
       include: {
         working_days: true,
@@ -20,7 +20,6 @@ const doctorService = {
 
   async getDoctorInformation(uid: string) {
     const doctor = await prisma.doctor.findUnique({ where: { uid } });
-    console.log(doctor);
     if (!doctor) {
       throw new AppError("Doctor data not found", 404);
     }

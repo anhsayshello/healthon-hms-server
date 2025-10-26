@@ -10,7 +10,7 @@ export const appCheckVerification = async (req, res, next) => {
   }
   try {
     const appCheckClaims = await getAppCheck(app).verifyToken(appCheckToken);
-    console.log("App Check verified:", appCheckClaims);
+    // console.log("App Check verified:", appCheckClaims);
     return next();
   } catch (error) {
     console.error("App Check verification failed:", error);

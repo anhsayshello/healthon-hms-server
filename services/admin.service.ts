@@ -7,9 +7,49 @@ import appoitmentService from "./appointment.service";
 import getToday from "../utils/utils";
 
 const adminService = {
-  async setUserRole(uid: string, role: Role) {
+  async setStaffRole(uid: string, role: Role) {
+    const STAFF_ROLES = ["ADMIN", "NURSE", "LAB_TECHNICIAN", "CASHIER"];
+
+    if (!STAFF_ROLES.includes(role)) {
+      throw new AppError(
+        "Invalid staff role. Only ADMIN, NURSE, LAB_TECHNICIAN, and CASHIER are allowed.",
+        400
+      );
+    }
+    const staff = await prisma.staff.findUnique({
+      where: { uid },
+    });
+
+    if (!staff) {
+      throw new AppError("User is not staff member.", 404);
+    }
+    await prisma.staff.update({
+      where: { uid },
+      data: {
+        role,
+      },
+    });
+
     await getAuth(app).setCustomUserClaims(uid, { role });
+
     return { message: `Assigned role '${role}' to user ${uid}` };
+  },
+  async setUserAccess(uid: string, disabled: boolean) {
+    const user = await getAuth(app).getUser(uid);
+
+    if (user.disabled === disabled) {
+      const status = disabled ? "revoked" : "granted";
+      throw new AppError(`User access is already ${status}`, 400);
+    }
+
+    await getAuth(app).updateUser(uid, { disabled });
+
+    const action = disabled ? "revoked" : "granted";
+    return {
+      message: `User access has been ${action}`,
+      uid,
+      disabled,
+    };
   },
   async getFirebaseUsers(nextPageToken?: string) {
     const listUsersResult = await getAuth(app).listUsers(10, nextPageToken);

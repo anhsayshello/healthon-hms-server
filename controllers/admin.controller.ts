@@ -27,11 +27,20 @@ adminRouter.get("/:uid", async (req, res, next) => {
   }
 });
 
-adminRouter.post("/", async (req, res, next) => {
+adminRouter.patch("/role", async (req, res, next) => {
   try {
-    const { role } = req.body;
-    const uid = req?.uid as string;
-    const result = await adminService.setUserRole(uid, role);
+    const { uid, role } = req.body;
+    const result = await adminService.setStaffRole(uid, role);
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.patch("/access", async (req, res, next) => {
+  try {
+    const { uid, disabled } = req.body;
+    const result = await adminService.setUserAccess(uid, disabled);
     return res.status(200).json(result);
   } catch (error) {
     next(error);

@@ -19,6 +19,20 @@ patientRouter.post("/upsert", async (req, res, next) => {
   }
 });
 
+patientRouter.get("/", async (req, res, next) => {
+  try {
+    const { query, page, limit } = req.query;
+    const result = await patientService.getPatients(
+      query as string,
+      Number(page),
+      Number(limit)
+    );
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
 patientRouter.get("/information", async (req, res, next) => {
   try {
     const uid = req.uid as string;

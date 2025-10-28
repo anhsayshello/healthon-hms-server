@@ -5,7 +5,14 @@ import { Role, type Patient } from "@prisma/client";
 import appoitmentService from "./appointment.service";
 import getToday from "../utils/utils";
 import app from "../config/firebase";
-import getRole from "../utils/getRole";
+import getRole from "../utils/get-role";
+import {
+  searchAppointmentFields,
+  searchDoctor,
+  searchPatient,
+  searchPatientDirect,
+} from "../utils/search-filters";
+import normalizePagination from "../utils/normalize-pagination";
 
 const patientService = {
   async upsertPatient(uid: string, props: Omit<Patient, "uid">) {
@@ -81,6 +88,28 @@ const patientService = {
     return {
       role: Role.PATIENT,
       data: patient,
+    };
+  },
+
+  async getPatients(query?: string, page?: number, limit?: number) {
+    const { PAGENUMBER, LIMIT, SKIP } = normalizePagination(page, limit);
+
+    const whereCondition = searchPatientDirect(query) || {};
+
+    const [data, totalRecords] = await Promise.all([
+      prisma.patient.findMany({
+        where: whereCondition,
+        skip: SKIP,
+        take: LIMIT,
+      }),
+      prisma.patient.count({ where: whereCondition }),
+    ]);
+
+    return {
+      data,
+      totalPages: Math.ceil(totalRecords / LIMIT),
+      currentPage: PAGENUMBER,
+      totalRecords,
     };
   },
 
@@ -179,53 +208,19 @@ const patientService = {
     page?: number,
     limit?: number
   ) {
-    const PAGENUMBER = !page || page <= 0 ? 1 : page;
-    const LIMIT = limit || 10;
-    const SKIP = (PAGENUMBER - 1) * LIMIT;
+    const { PAGENUMBER, LIMIT, SKIP } = normalizePagination(page, limit);
 
     const whereCondition: any = {
       patient_id: uid,
     };
 
-    if (query && query.trim()) {
-      whereCondition.OR = [
-        {
-          reason: {
-            contains: query,
-            mode: "insensitive",
-          },
-        },
-        {
-          note: {
-            contains: query,
-            mode: "insensitive",
-          },
-        },
-        {
-          doctor: {
-            OR: [
-              {
-                first_name: {
-                  contains: query,
-                  mode: "insensitive",
-                },
-              },
-              {
-                last_name: {
-                  contains: query,
-                  mode: "insensitive",
-                },
-              },
-              {
-                specialization: {
-                  contains: query,
-                  mode: "insensitive",
-                },
-              },
-            ],
-          },
-        },
-      ];
+    if (query?.trim()) {
+      const searchConditions = [
+        ...searchAppointmentFields(query),
+        searchDoctor(query),
+      ].filter(Boolean);
+
+      whereCondition.OR = searchConditions;
     }
 
     const data = await prisma.appointment.findMany({

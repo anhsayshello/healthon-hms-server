@@ -4,7 +4,7 @@ import { getMonth, format, startOfYear, endOfMonth } from "date-fns";
 import { initializeMonthlyData, isValidStatus } from "../utils/utils";
 import AppError from "../utils/app-error";
 import prisma from "../config/db";
-import getRole from "../utils/getRole";
+import getRole from "../utils/get-role";
 
 const appoitmentService = {
   async processAppointments(appointments: Appointment[]) {

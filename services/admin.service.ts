@@ -5,6 +5,13 @@ import prisma from "../config/db";
 import AppError from "../utils/app-error";
 import appoitmentService from "./appointment.service";
 import getToday from "../utils/utils";
+import {
+  searchAppointmentFields,
+  searchDoctor,
+  searchPatient,
+} from "../utils/search-filters";
+import normalizePagination from "../utils/normalize-pagination";
+import { FirebaseAppError } from "firebase-admin/app";
 
 const adminService = {
   async createDoctor(
@@ -142,93 +149,18 @@ const adminService = {
   },
 
   async getAdminAppointments(query?: string, page?: number, limit?: number) {
-    const PAGENUMBER = !page || page <= 0 ? 1 : page;
-    const LIMIT = limit || 10;
-    const SKIP = (PAGENUMBER - 1) * LIMIT;
+    const { PAGENUMBER, LIMIT, SKIP } = normalizePagination(page, limit);
 
     const whereCondition: any = {};
 
-    if (query && query.trim()) {
-      whereCondition.OR = [
-        {
-          reason: {
-            contains: query,
-            mode: "insensitive",
-          },
-        },
-        {
-          note: {
-            contains: query,
-            mode: "insensitive",
-          },
-        },
-        {
-          doctor: {
-            OR: [
-              {
-                uid: {
-                  contains: query,
-                  mode: "insensitive",
-                },
-              },
-              {
-                first_name: {
-                  contains: query,
-                  mode: "insensitive",
-                },
-              },
-              {
-                last_name: {
-                  contains: query,
-                  mode: "insensitive",
-                },
-              },
-              {
-                specialization: {
-                  contains: query,
-                  mode: "insensitive",
-                },
-              },
-            ],
-          },
-        },
-        {
-          patient: {
-            OR: [
-              {
-                uid: {
-                  contains: query,
-                  mode: "insensitive",
-                },
-              },
-              {
-                first_name: {
-                  contains: query,
-                  mode: "insensitive",
-                },
-              },
-              {
-                last_name: {
-                  contains: query,
-                  mode: "insensitive",
-                },
-              },
-              {
-                phone: {
-                  contains: query,
-                  mode: "insensitive",
-                },
-              },
-              {
-                address: {
-                  contains: query,
-                  mode: "insensitive",
-                },
-              },
-            ],
-          },
-        },
-      ];
+    if (query?.trim()) {
+      const searchConditions = [
+        ...searchAppointmentFields(query),
+        searchPatient(query),
+        searchDoctor(query),
+      ].filter(Boolean);
+
+      whereCondition.OR = searchConditions;
     }
 
     const data = await prisma.appointment.findMany({
@@ -264,7 +196,9 @@ const adminService = {
       take: LIMIT,
     });
 
-    const totalRecords = await prisma.appointment.count();
+    const totalRecords = await prisma.appointment.count({
+      where: whereCondition,
+    });
 
     const totalPages = Math.ceil(totalRecords / LIMIT);
 
@@ -288,48 +222,64 @@ const adminService = {
 
   async setStaffRole(uid: string, role: Role) {
     const STAFF_ROLES = ["ADMIN", "NURSE", "LAB_TECHNICIAN", "CASHIER"];
+    try {
+      if (!STAFF_ROLES.includes(role)) {
+        throw new AppError(
+          "Invalid staff role. Only ADMIN, NURSE, LAB_TECHNICIAN, and CASHIER are allowed.",
+          400
+        );
+      }
+      const staff = await prisma.staff.findUnique({
+        where: { uid },
+      });
 
-    if (!STAFF_ROLES.includes(role)) {
-      throw new AppError(
-        "Invalid staff role. Only ADMIN, NURSE, LAB_TECHNICIAN, and CASHIER are allowed.",
-        400
-      );
+      if (!staff) {
+        throw new AppError("User is not staff member.", 404);
+      }
+      await prisma.staff.update({
+        where: { uid },
+        data: {
+          role,
+        },
+      });
+
+      await getAuth(app).setCustomUserClaims(uid, { role });
+
+      return { message: `Role '${role}' has been assigned to ${staff.email}.` };
+    } catch (error) {
+      if (error instanceof FirebaseAuthError) {
+        const errorMessage = error.message;
+        throw new AppError(errorMessage, 400);
+      }
+      throw new AppError("Failed to set staff role", 400);
     }
-    const staff = await prisma.staff.findUnique({
-      where: { uid },
-    });
-
-    if (!staff) {
-      throw new AppError("User is not staff member.", 404);
-    }
-    await prisma.staff.update({
-      where: { uid },
-      data: {
-        role,
-      },
-    });
-
-    await getAuth(app).setCustomUserClaims(uid, { role });
-
-    return { message: `Role '${role}' has been assigned to ${staff.email}.` };
   },
 
   async setUserAccess(uid: string, disabled: boolean) {
-    const user = await getAuth(app).getUser(uid);
-    const email = user.email;
+    try {
+      const user = await getAuth(app).getUser(uid);
+      const email = user.email;
 
-    if (user.disabled === disabled) {
-      const status = disabled ? "revoked" : "granted";
-      throw new AppError(`User access is already ${status}`, 400);
+      if (user.disabled === disabled) {
+        const status = disabled ? "revoked" : "granted";
+        throw new AppError(`User access is already ${status}`, 400);
+      }
+
+      await getAuth(app).updateUser(uid, { disabled });
+
+      const action = disabled ? "Disabled" : "Enabled";
+      return {
+        message: `${action} ${email} `,
+      };
+    } catch (error) {
+      if (error instanceof FirebaseAuthError) {
+        const errorMessage = error.message;
+        throw new AppError(errorMessage, 400);
+      }
+      throw new AppError("Failed to set user access", 400);
     }
-
-    await getAuth(app).updateUser(uid, { disabled });
-
-    const action = disabled ? "Disabled" : "Enabled";
-    return {
-      message: `${action} ${email} `,
-    };
   },
+
   async getUserById(uid: string) {
     const user = await getAuth(app).getUser(uid);
     const role = user.customClaims?.role;
@@ -393,7 +343,10 @@ const adminService = {
 
       return { message: `Deleted ${email}` };
     } catch (error) {
-      console.error("Error deleting user:", error);
+      if (error instanceof FirebaseAuthError) {
+        const errorMessage = error.message;
+        throw new AppError(errorMessage, 400);
+      }
       throw new AppError("Failed to delete user", 400);
     }
   },

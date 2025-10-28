@@ -7,6 +7,18 @@ const patientRouter = Router();
 
 patientRouter.use(...authMiddlewares);
 
+patientRouter.post("/upsert", async (req, res, next) => {
+  try {
+    const props: Omit<Patient, "uid"> = req.body;
+
+    const uid = req.uid as string;
+    const result = await patientService.upsertPatient(uid, props);
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
 patientRouter.get("/information", async (req, res, next) => {
   try {
     const uid = req.uid as string;
@@ -38,18 +50,6 @@ patientRouter.get("/appointments", async (req, res, next) => {
       Number(page),
       Number(limit)
     );
-    return res.status(200).json(result);
-  } catch (error) {
-    next(error);
-  }
-});
-
-patientRouter.post("/upsert", async (req, res, next) => {
-  try {
-    const props: Omit<Patient, "uid"> = req.body;
-
-    const uid = req.uid as string;
-    const result = await patientService.upsertPatient(uid, props);
     return res.status(200).json(result);
   } catch (error) {
     next(error);

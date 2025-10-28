@@ -59,6 +59,12 @@ const doctorService = {
           patient: {
             OR: [
               {
+                uid: {
+                  contains: query,
+                  mode: "insensitive",
+                },
+              },
+              {
                 first_name: {
                   contains: query,
                   mode: "insensitive",
@@ -95,6 +101,7 @@ const doctorService = {
         patient: {
           select: {
             uid: true,
+            email: true,
             first_name: true,
             last_name: true,
             phone: true,

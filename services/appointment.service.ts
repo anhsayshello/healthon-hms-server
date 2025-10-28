@@ -47,23 +47,7 @@ const appoitmentService = {
     return { appointmentCounts, monthlyData };
   },
 
-  async getAppointmentById(id: number) {
-    const data = await prisma.appointment.findUnique({
-      where: { id },
-      include: {
-        doctor: true,
-        patient: true,
-      },
-    });
-
-    if (!data) {
-      throw new AppError("Appointment data not found", 404);
-    }
-
-    return { data };
-  },
-
-  async createNewAppointment(
+  async createAppointment(
     patient_id: string,
     doctor_id: string,
     appointment_date: string,
@@ -133,7 +117,8 @@ const appoitmentService = {
     uid: string,
     id: number,
     status: AppointmentStatus,
-    reason?: string
+    reason?: string,
+    note?: string
   ) {
     const { role, isPatient, isDoctor, isAdmin } = await getRole(uid);
 
@@ -145,10 +130,15 @@ const appoitmentService = {
     if (!appointment) {
       throw new AppError("Appointment not found", 404);
     }
+
     if (appointment.status === AppointmentStatus.COMPLETED) {
       throw new AppError("This appointment has already been completed");
     } else if (appointment.status === AppointmentStatus.CANCELLED) {
       throw new AppError("This appointment has already been cancelled");
+    }
+
+    if (appointment.status === status) {
+      throw new AppError(`Appointment is already ${status.toLowerCase()}`, 400);
     }
 
     let data = null;
@@ -170,6 +160,7 @@ const appoitmentService = {
         data: {
           status: AppointmentStatus.CANCELLED,
           reason: reason ?? null,
+          note: note ?? null,
         },
       });
     } else if (isDoctor) {
@@ -185,6 +176,7 @@ const appoitmentService = {
         data: {
           status,
           reason: reason ?? null,
+          note: note ?? null,
         },
       });
     } else if (isAdmin) {
@@ -193,10 +185,27 @@ const appoitmentService = {
         data: {
           status,
           reason: reason ?? null,
+          note: note ?? null,
         },
       });
     } else {
       throw new AppError("You are not authorized to update appointments.", 403);
+    }
+
+    return { data };
+  },
+
+  async getAppointmentById(id: number) {
+    const data = await prisma.appointment.findUnique({
+      where: { id },
+      include: {
+        doctor: true,
+        patient: true,
+      },
+    });
+
+    if (!data) {
+      throw new AppError("Appointment data not found", 404);
     }
 
     return { data };

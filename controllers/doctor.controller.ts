@@ -8,7 +8,12 @@ doctorRouter.use(...authMiddlewares);
 
 doctorRouter.get("/", async (req, res, next) => {
   try {
-    const result = await doctorService.getAllDoctors();
+    const { query, page, limit } = req.query;
+    const result = await doctorService.getDoctors(
+      query as string,
+      Number(page),
+      Number(limit)
+    );
     return res.status(200).json(result);
   } catch (error) {
     next(error);

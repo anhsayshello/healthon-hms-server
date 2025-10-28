@@ -3,18 +3,36 @@ import prisma from "../config/db";
 import getToday from "../utils/utils";
 import appoitmentService from "./appointment.service";
 import AppError from "../utils/app-error";
-import getRole from "../utils/getRole";
+import getRole from "../utils/get-role";
+import {
+  searchAppointmentFields,
+  searchDoctor,
+  searchDoctorDirect,
+  searchPatient,
+} from "../utils/search-filters";
+import normalizePagination from "../utils/normalize-pagination";
 
 const doctorService = {
-  async getAllDoctors() {
-    const data = await prisma.doctor.findMany({
-      include: {
-        working_days: true,
-      },
-      orderBy: { created_at: "desc" },
-    });
+  async getDoctors(query?: string, page?: number, limit?: number) {
+    const { PAGENUMBER, LIMIT, SKIP } = normalizePagination(page, limit);
+
+    const whereCondition = searchDoctorDirect(query) || {};
+
+    const [data, totalRecords] = await Promise.all([
+      prisma.doctor.findMany({
+        where: whereCondition,
+        include: { working_days: true },
+        skip: SKIP,
+        take: LIMIT,
+      }),
+      prisma.doctor.count({ where: whereCondition }),
+    ]);
+
     return {
       data,
+      totalPages: Math.ceil(totalRecords / LIMIT),
+      currentPage: PAGENUMBER,
+      totalRecords,
     };
   },
 
@@ -33,70 +51,23 @@ const doctorService = {
     page?: number,
     limit?: number
   ) {
-    const PAGENUMBER = !page || page <= 0 ? 1 : page;
-    const LIMIT = limit || 10;
-    const SKIP = (PAGENUMBER - 1) * LIMIT;
+    const { PAGENUMBER, LIMIT, SKIP } = normalizePagination(page, limit);
 
     const whereCondition: any = {
       doctor_id: uid,
     };
 
-    if (query && query.trim()) {
-      whereCondition.OR = [
-        {
-          reason: {
-            contains: query,
-            mode: "insensitive",
-          },
-        },
-        {
-          note: {
-            contains: query,
-            mode: "insensitive",
-          },
-        },
-        {
-          patient: {
-            OR: [
-              {
-                uid: {
-                  contains: query,
-                  mode: "insensitive",
-                },
-              },
-              {
-                first_name: {
-                  contains: query,
-                  mode: "insensitive",
-                },
-              },
-              {
-                last_name: {
-                  contains: query,
-                  mode: "insensitive",
-                },
-              },
-              {
-                phone: {
-                  contains: query,
-                  mode: "insensitive",
-                },
-              },
-              {
-                address: {
-                  contains: query,
-                  mode: "insensitive",
-                },
-              },
-            ],
-          },
-        },
-      ];
+    if (query?.trim()) {
+      const searchConditions = [
+        ...searchAppointmentFields(query),
+        searchPatient(query),
+      ].filter(Boolean);
+
+      whereCondition.OR = searchConditions;
     }
 
     const data = await prisma.appointment.findMany({
       where: whereCondition,
-
       include: {
         patient: {
           select: {

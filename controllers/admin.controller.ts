@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { authMiddlewares } from "../middlewares";
-import adminService from "../services/admin.service";
 import type { Doctor, Staff, Weekday } from "@prisma/client";
 import { requireAdmin } from "../middlewares/requireAdmin";
+import adminService from "../services/admin/index";
 
 const adminRouter = Router();
 
@@ -37,7 +37,9 @@ adminRouter.post("/staff", async (req, res, next) => {
       req.body;
     const result = await adminService.createStaff(props);
     return res.status(201).json(result);
-  } catch (error) {}
+  } catch (error) {
+    next(error);
+  }
 });
 
 adminRouter.get("/statistic", async (req, res, next) => {

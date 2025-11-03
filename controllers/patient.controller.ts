@@ -1,7 +1,7 @@
 import { Router } from "express";
-import patientService from "../services/patient.service";
 import { authMiddlewares } from "../middlewares";
 import type { Patient } from "@prisma/client";
+import patientService from "../services/patient/index";
 
 const patientRouter = Router();
 

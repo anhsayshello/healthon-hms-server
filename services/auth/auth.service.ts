@@ -1,6 +1,6 @@
 import { getAuth } from "firebase-admin/auth";
-import AppError from "../utils/app-error";
-import prisma from "../config/db";
+import AppError from "../../utils/app-error";
+import prisma from "../../config/db";
 import { Role } from "@prisma/client";
 
 const authService = {

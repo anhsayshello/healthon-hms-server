@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { appCheckVerification } from "../middlewares/appCheckVerification";
-import authService from "../services/auth.service";
+import authService from "../services/auth/auth.service";
 
 const authRouter = Router();
 

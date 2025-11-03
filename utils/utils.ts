@@ -1,8 +1,8 @@
 import { Weekday, type AppointmentStatus } from "@prisma/client";
 import { format, getMonth } from "date-fns";
 
-export const getTokenFrom = (request) => {
-  const authorization = request.get("authorization");
+export const getTokenFrom = (req) => {
+  const authorization = req.get("authorization");
   if (authorization && authorization.startsWith("Bearer ")) {
     return authorization.replace("Bearer ", "");
   }
@@ -14,12 +14,12 @@ export function isValidStatus(status: string): status is AppointmentStatus {
 }
 
 export const initializeMonthlyData = () => {
-  const this_year = new Date().getFullYear();
+  const thisYear = new Date().getFullYear();
 
   const months = Array.from(
     { length: getMonth(new Date()) + 1 },
     (_, index) => ({
-      month: format(new Date(this_year, index), "MMM"),
+      month: format(new Date(thisYear, index), "MMM"),
       appointment: 0,
       completed: 0,
     })

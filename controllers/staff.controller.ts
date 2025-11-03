@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authMiddlewares } from "../middlewares";
-import staffService from "../services/staff.service";
+import staffService from "../services/staff/index";
 
 const staffRouter = Router();
 

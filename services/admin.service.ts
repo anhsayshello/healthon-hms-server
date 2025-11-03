@@ -1,4 +1,4 @@
-import { type Doctor, Role, type Staff, Weekday } from "@prisma/client";
+import { type Doctor, Prisma, Role, type Staff, Weekday } from "@prisma/client";
 import { FirebaseAuthError, getAuth } from "firebase-admin/auth";
 import app from "../config/firebase";
 import prisma from "../config/db";
@@ -11,7 +11,6 @@ import {
   searchPatient,
 } from "../utils/search-filters";
 import normalizePagination from "../utils/normalize-pagination";
-import { FirebaseAppError } from "firebase-admin/app";
 
 const adminService = {
   async createDoctor(
@@ -151,17 +150,15 @@ const adminService = {
   async getAdminAppointments(query?: string, page?: number, limit?: number) {
     const { PAGENUMBER, LIMIT, SKIP } = normalizePagination(page, limit);
 
-    const whereCondition: any = {};
-
-    if (query?.trim()) {
-      const searchConditions = [
-        ...searchAppointmentFields(query),
-        searchPatient(query),
-        searchDoctor(query),
-      ].filter(Boolean);
-
-      whereCondition.OR = searchConditions;
-    }
+    const whereCondition: Prisma.AppointmentWhereInput = {
+      ...(query?.trim() && {
+        OR: [
+          ...searchAppointmentFields(query),
+          searchDoctor(query),
+          searchPatient(query),
+        ].filter(Boolean) as Prisma.AppointmentWhereInput[],
+      }),
+    };
 
     const data = await prisma.appointment.findMany({
       where: whereCondition,
@@ -266,6 +263,12 @@ const adminService = {
       }
 
       await getAuth(app).updateUser(uid, { disabled });
+      await prisma.staff.update({
+        where: { uid },
+        data: {
+          status: disabled ? "INACTIVE" : "ACTIVE",
+        },
+      });
 
       const action = disabled ? "Disabled" : "Enabled";
       return {
@@ -278,40 +281,6 @@ const adminService = {
       }
       throw new AppError("Failed to set user access", 400);
     }
-  },
-
-  async getUserById(uid: string) {
-    const user = await getAuth(app).getUser(uid);
-    const role = user.customClaims?.role;
-
-    let data = null;
-
-    if (role) {
-      switch (role) {
-        case Role.PATIENT:
-          data = await prisma.patient.findUnique({ where: { uid } });
-          break;
-
-        case Role.DOCTOR:
-          data = await prisma.doctor.findUnique({
-            where: { uid },
-            include: { working_days: true },
-          });
-          break;
-
-        case Role.ADMIN:
-        case Role.NURSE:
-        case Role.LAB_TECHNICIAN:
-        case Role.CASHIER:
-          data = await prisma.staff.findUnique({ where: { uid } });
-          break;
-
-        default:
-          throw new AppError(`Unknown role: ${role}`, 400);
-      }
-    }
-
-    return { data };
   },
 
   async deleteUserById(uid: string) {
@@ -353,47 +322,53 @@ const adminService = {
 
   async getAdminDashboardStatistics() {
     const today = getToday();
-    const [totalPatients, totalDoctors, appointments, availableDoctors] =
-      await Promise.all([
-        prisma.patient.count(),
-        prisma.doctor.count(),
-        prisma.appointment.findMany({
-          include: {
-            patient: {
-              select: {
-                uid: true,
-                first_name: true,
-                last_name: true,
-                gender: true,
-                date_of_birth: true,
-                photo_url: true,
-              },
-            },
-            doctor: {
-              select: {
-                uid: true,
-                first_name: true,
-                last_name: true,
-                specialization: true,
-                photo_url: true,
-              },
+    const [
+      totalPatients,
+      totalDoctors,
+      appointments,
+      availableDoctors,
+      totalRecords,
+    ] = await Promise.all([
+      prisma.patient.count(),
+      prisma.doctor.count(),
+      prisma.appointment.findMany({
+        include: {
+          patient: {
+            select: {
+              uid: true,
+              first_name: true,
+              last_name: true,
+              gender: true,
+              date_of_birth: true,
+              photo_url: true,
             },
           },
-          orderBy: { created_at: "desc" },
-        }),
-        prisma.doctor.findMany({
-          where: { working_days: { some: { day: today } } },
-          select: {
-            uid: true,
-            first_name: true,
-            last_name: true,
-            photo_url: true,
-            specialization: true,
-            working_days: true,
+          doctor: {
+            select: {
+              uid: true,
+              first_name: true,
+              last_name: true,
+              specialization: true,
+              photo_url: true,
+            },
           },
-          take: 6,
-        }),
-      ]);
+        },
+        orderBy: { created_at: "desc" },
+      }),
+      prisma.doctor.findMany({
+        where: { working_days: { some: { day: today } } },
+        select: {
+          uid: true,
+          first_name: true,
+          last_name: true,
+          photo_url: true,
+          specialization: true,
+          working_days: true,
+        },
+        take: 6,
+      }),
+      prisma.appointment.count(),
+    ]);
 
     const { appointmentCounts, monthlyData } =
       await appoitmentService.processAppointments(appointments);
@@ -407,6 +382,7 @@ const adminService = {
       appointmentCounts,
       last5Records,
       availableDoctors,
+      totalRecords,
       totalAppointments,
       monthlyData,
     };

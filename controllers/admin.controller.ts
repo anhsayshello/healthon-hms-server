@@ -93,16 +93,6 @@ adminRouter.patch("/access", async (req, res, next) => {
   }
 });
 
-adminRouter.get("/:uid", async (req, res, next) => {
-  try {
-    const { uid } = req.params;
-    const result = await adminService.getUserById(uid);
-    return res.status(200).json(result);
-  } catch (error) {
-    next(error);
-  }
-});
-
 adminRouter.delete("/:uid", async (req, res, next) => {
   try {
     const { uid } = req.params;

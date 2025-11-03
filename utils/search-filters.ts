@@ -1,67 +1,99 @@
-const createContainsFilter = (field: string, query: string) => ({
-  [field]: {
-    contains: query,
-    mode: "insensitive" as const,
-  },
-});
+import { Prisma } from "@prisma/client";
 
-const createMultiFieldSearch = (fields: string[], query: string) => ({
-  OR: fields.map((field) => createContainsFilter(field, query)),
-});
+function createMultiFieldSearch<T extends Record<string, any>>(
+  fields: Array<keyof T & string>,
+  query: string
+): { OR: Array<Partial<T>> } {
+  return {
+    OR: fields.map((field) => ({
+      [field]: {
+        contains: query,
+        mode: Prisma.QueryMode.insensitive,
+      },
+    })) as Array<Partial<T>>,
+  };
+}
 
-export const searchAppointmentFields = (query: string) => {
-  if (!query?.trim()) return [];
+export const searchAppointmentFields = (
+  query: string
+): Prisma.AppointmentWhereInput[] => {
+  const trimmedQuery = query?.trim();
+  if (!trimmedQuery) return [];
 
   return [
-    createContainsFilter("reason", query),
-    createContainsFilter("note", query),
+    { reason: { contains: trimmedQuery, mode: Prisma.QueryMode.insensitive } },
+    { note: { contains: trimmedQuery, mode: Prisma.QueryMode.insensitive } },
   ];
 };
 
-export const searchDoctorDirect = (query?: string) => {
-  if (!query?.trim()) return null;
+export const searchDoctorDirect = (
+  query?: string
+): Prisma.DoctorWhereInput | null => {
+  const trimmedQuery = query?.trim();
+  if (!trimmedQuery) return null;
 
-  return createMultiFieldSearch(
-    ["uid", "email", "first_name", "last_name", "specialization"],
-    query
+  return createMultiFieldSearch<Prisma.DoctorWhereInput>(
+    [
+      "uid",
+      "email",
+      "first_name",
+      "last_name",
+      "license_number",
+      "phone",
+      "specialization",
+      "department",
+    ],
+    trimmedQuery
   );
 };
 
-export const searchPatientDirect = (query?: string) => {
-  if (!query?.trim()) return null;
+export const searchPatientDirect = (
+  query?: string
+): Prisma.PatientWhereInput | null => {
+  const trimmedQuery = query?.trim();
+  if (!trimmedQuery) return null;
 
-  return createMultiFieldSearch(
+  return createMultiFieldSearch<Prisma.PatientWhereInput>(
     ["uid", "email", "first_name", "last_name", "phone", "address"],
-    query
+    trimmedQuery
   );
 };
 
-export const searchStaffDirect = (query?: string) => {
-  if (!query?.trim()) return null;
+export const searchStaffDirect = (
+  query?: string
+): Prisma.StaffWhereInput | null => {
+  const trimmedQuery = query?.trim();
+  if (!trimmedQuery) return null;
 
-  return createMultiFieldSearch(
-    ["uid", "email", "first_name", "last_name", "phone", "address"],
-    query
+  return createMultiFieldSearch<Prisma.StaffWhereInput>(
+    [
+      "uid",
+      "email",
+      "first_name",
+      "last_name",
+      "license_number",
+      "phone",
+      "address",
+      "department",
+    ],
+    trimmedQuery
   );
 };
 
-export const searchDoctor = (query: string) => {
+export const searchDoctor = (
+  query: string
+): Prisma.AppointmentWhereInput | null => {
   const directSearch = searchDoctorDirect(query);
   if (!directSearch) return null;
 
   return { doctor: directSearch };
 };
 
-export const searchPatient = (query: string) => {
+export const searchPatient = (
+  query: string
+): Prisma.AppointmentWhereInput | null => {
   const directSearch = searchPatientDirect(query);
   if (!directSearch) return null;
 
   return { patient: directSearch };
-};
-
-export const searchStaff = (query: string) => {
-  const directSearch = searchStaffDirect(query);
-  if (!directSearch) return null;
-
-  return { staff: directSearch };
 };

@@ -70,4 +70,14 @@ patientRouter.get("/appointments", async (req, res, next) => {
   }
 });
 
+patientRouter.get("/:uid", async (req, res, next) => {
+  try {
+    const { uid } = req.params;
+    const result = await patientService.getPatientById(uid);
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default patientRouter;

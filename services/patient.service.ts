@@ -1,7 +1,7 @@
 import { getAuth } from "firebase-admin/auth";
 import AppError from "../utils/app-error";
 import prisma from "../config/db";
-import { Role, type Patient } from "@prisma/client";
+import { Prisma, Role, type Patient } from "@prisma/client";
 import appoitmentService from "./appointment.service";
 import getToday from "../utils/utils";
 import app from "../config/firebase";
@@ -94,13 +94,14 @@ const patientService = {
   async getPatients(query?: string, page?: number, limit?: number) {
     const { PAGENUMBER, LIMIT, SKIP } = normalizePagination(page, limit);
 
-    const whereCondition = searchPatientDirect(query) || {};
+    const whereCondition = searchPatientDirect(query) ?? {};
 
     const [data, totalRecords] = await Promise.all([
       prisma.patient.findMany({
         where: whereCondition,
         skip: SKIP,
         take: LIMIT,
+        orderBy: { created_at: "desc" },
       }),
       prisma.patient.count({ where: whereCondition }),
     ]);
@@ -115,7 +116,6 @@ const patientService = {
 
   async getPatientInfomation(uid: string) {
     const patient = await prisma.patient.findUnique({ where: { uid } });
-    console.log(patient);
     if (!patient) {
       throw new AppError("Patient data not found", 404);
     }
@@ -124,6 +124,15 @@ const patientService = {
       data: patient,
     };
   },
+  async getPatientById(uid: string) {
+    const data = await prisma.patient.findUnique({ where: { uid } });
+    if (!data) {
+      throw new AppError("Patient data not found", 404);
+    }
+
+    return { data };
+  },
+
   async getPatientDashboardStatistics(uid: string) {
     const { isPatient } = await getRole(uid);
     if (!isPatient) {
@@ -131,60 +140,62 @@ const patientService = {
     }
 
     const today = getToday();
-    const [patient, appointments, availableDoctors] = await Promise.all([
-      prisma.patient.findUnique({
-        where: { uid },
-        select: {
-          uid: true,
-          first_name: true,
-          last_name: true,
-          gender: true,
-          photo_url: true,
-        },
-      }),
-      prisma.appointment.findMany({
-        where: { patient_id: uid },
-        include: {
-          doctor: {
-            select: {
-              uid: true,
-              first_name: true,
-              last_name: true,
-              photo_url: true,
-              specialization: true,
+    const [patient, appointments, availableDoctors, totalRecords] =
+      await Promise.all([
+        prisma.patient.findUnique({
+          where: { uid },
+          select: {
+            uid: true,
+            first_name: true,
+            last_name: true,
+            gender: true,
+            photo_url: true,
+          },
+        }),
+        prisma.appointment.findMany({
+          where: { patient_id: uid },
+          include: {
+            doctor: {
+              select: {
+                uid: true,
+                first_name: true,
+                last_name: true,
+                photo_url: true,
+                specialization: true,
+              },
+            },
+            patient: {
+              select: {
+                uid: true,
+                first_name: true,
+                last_name: true,
+                gender: true,
+                photo_url: true,
+              },
             },
           },
-          patient: {
-            select: {
-              uid: true,
-              first_name: true,
-              last_name: true,
-              gender: true,
-              photo_url: true,
+          orderBy: { created_at: "desc" },
+        }),
+        prisma.doctor.findMany({
+          select: {
+            uid: true,
+            first_name: true,
+            last_name: true,
+            photo_url: true,
+            specialization: true,
+            working_days: true,
+          },
+          where: {
+            working_days: {
+              some: {
+                day: today,
+              },
             },
           },
-        },
-        orderBy: { created_at: "desc" },
-      }),
-      prisma.doctor.findMany({
-        select: {
-          uid: true,
-          first_name: true,
-          last_name: true,
-          photo_url: true,
-          specialization: true,
-          working_days: true,
-        },
-        where: {
-          working_days: {
-            some: {
-              day: today,
-            },
-          },
-        },
-        take: 6,
-      }),
-    ]);
+          take: 6,
+        }),
+        prisma.appointment.count({ where: { patient_id: uid } }),
+      ]);
 
     const { appointmentCounts, monthlyData } =
       await appoitmentService.processAppointments(appointments);
@@ -197,6 +208,7 @@ const patientService = {
       appointmentCounts,
       last5Records,
       totalAppointments,
+      totalRecords,
       availableDoctors,
       monthlyData,
     };
@@ -210,18 +222,14 @@ const patientService = {
   ) {
     const { PAGENUMBER, LIMIT, SKIP } = normalizePagination(page, limit);
 
-    const whereCondition: any = {
+    const whereCondition: Prisma.AppointmentWhereInput = {
       patient_id: uid,
+      ...(query?.trim() && {
+        OR: [...searchAppointmentFields(query), searchDoctor(query)].filter(
+          Boolean
+        ) as Prisma.AppointmentWhereInput[],
+      }),
     };
-
-    if (query?.trim()) {
-      const searchConditions = [
-        ...searchAppointmentFields(query),
-        searchDoctor(query),
-      ].filter(Boolean);
-
-      whereCondition.OR = searchConditions;
-    }
 
     const data = await prisma.appointment.findMany({
       where: whereCondition,
@@ -257,7 +265,7 @@ const patientService = {
     });
 
     const totalRecords = await prisma.appointment.count({
-      where: { patient_id: uid },
+      where: whereCondition,
     });
 
     const totalPages = Math.ceil(totalRecords / LIMIT);

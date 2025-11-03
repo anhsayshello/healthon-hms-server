@@ -47,4 +47,14 @@ doctorRouter.get("/statistic", async (req, res, next) => {
   }
 });
 
+doctorRouter.get("/:uid", async (req, res, next) => {
+  try {
+    const { uid } = req.params;
+    const result = await doctorService.getDoctorById(uid);
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default doctorRouter;

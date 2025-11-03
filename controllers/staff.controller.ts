@@ -18,4 +18,14 @@ staffRouter.get("/", async (req, res, next) => {
   } catch (error) {}
 });
 
+staffRouter.get("/:uid", async (req, res, next) => {
+  try {
+    const { uid } = req.params;
+    const result = await staffService.getStaffById(uid);
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default staffRouter;

@@ -61,5 +61,5 @@ export default async function createStaff(
     },
   });
 
-  return { data: newStaff };
+  return newStaff;
 }

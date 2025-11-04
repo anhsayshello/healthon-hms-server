@@ -65,5 +65,5 @@ export default async function createAppointment(
     },
   });
 
-  return { data: newAppointment };
+  return newAppointment;
 }

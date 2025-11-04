@@ -7,7 +7,5 @@ export default async function getPatientInfomation(uid: string) {
     throw new AppError("Patient data not found", 404);
   }
 
-  return {
-    data: patient,
-  };
+  return patient;
 }

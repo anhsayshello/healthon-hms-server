@@ -75,5 +75,5 @@ export default async function createDoctor(
     },
   });
 
-  return { data: newDoctor };
+  return newDoctor;
 }

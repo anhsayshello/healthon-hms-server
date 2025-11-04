@@ -1,7 +1,6 @@
 import createDoctor from "./createDoctor.service";
 import createStaff from "./createStaff.service";
 import deleteUserById from "./deleteUserById.service";
-import getAdminAppointments from "./getAdminAppointments.service";
 import getAdminDashboardStatistics from "./getAdminDashBoardStatistic.service";
 import getFirebaseUsers from "./getFirebaseUsers.service";
 import setStaffRole from "./setStaffRole.service";
@@ -12,7 +11,6 @@ const adminService = {
   createStaff,
   setStaffRole,
   setUserAccess,
-  getAdminAppointments,
   getAdminDashboardStatistics,
   getFirebaseUsers,
   deleteUserById,

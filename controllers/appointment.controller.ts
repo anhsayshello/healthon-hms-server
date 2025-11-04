@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { authMiddlewares } from "../middlewares";
 import appointmentService from "../services/appointment/index";
+import type { AppointmentParams } from "../types";
 
 const appointmentRouter = Router();
 
@@ -10,7 +11,6 @@ appointmentRouter.post("/", async (req, res, next) => {
   try {
     const uid = req.uid as string;
     const { doctor_id, type, appointment_date, time, note } = req.body;
-    console.log(req.body, "body");
     const result = await appointmentService.createAppointment(
       uid,
       doctor_id,
@@ -25,7 +25,18 @@ appointmentRouter.post("/", async (req, res, next) => {
   }
 });
 
-appointmentRouter.post("/:id", async (req, res, next) => {
+appointmentRouter.get("/", async (req, res, next) => {
+  try {
+    const params: AppointmentParams = req.query;
+    console.log(params.query);
+    const result = await appointmentService.getAppointments(params);
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
+appointmentRouter.patch("/:id", async (req, res, next) => {
   try {
     const uid = req.uid as string;
     const { id } = req.params;
@@ -37,7 +48,7 @@ appointmentRouter.post("/:id", async (req, res, next) => {
       reason,
       note
     );
-    return res.status(201).json(result);
+    return res.status(200).json(result);
   } catch (error) {
     next(error);
   }

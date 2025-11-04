@@ -3,6 +3,7 @@ import { authMiddlewares } from "../middlewares";
 import type { Doctor, Staff, Weekday } from "@prisma/client";
 import { requireAdmin } from "../middlewares/requireAdmin";
 import adminService from "../services/admin/index";
+import type { AppointmentParams } from "../types";
 
 const adminRouter = Router();
 
@@ -45,20 +46,6 @@ adminRouter.post("/staff", async (req, res, next) => {
 adminRouter.get("/statistic", async (req, res, next) => {
   try {
     const result = await adminService.getAdminDashboardStatistics();
-    return res.status(200).json(result);
-  } catch (error) {
-    next(error);
-  }
-});
-
-adminRouter.get("/appointments", async (req, res, next) => {
-  try {
-    const { query, page, limit } = req.query;
-    const result = await adminService.getAdminAppointments(
-      query as string,
-      Number(page),
-      Number(limit)
-    );
     return res.status(200).json(result);
   } catch (error) {
     next(error);

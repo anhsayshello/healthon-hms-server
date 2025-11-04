@@ -1,3 +1,50 @@
-const medicalRecordService = {};
+import type { Prisma } from "@prisma/client";
+import type { SearchQueryParams } from "../../types";
+import normalizePagination from "../../utils/normalize-pagination";
+import prisma from "../../config/db";
 
-export default medicalRecordService;
+export default async function getMedicalRecords(params: SearchQueryParams) {
+  const { query, page, limit } = params;
+  const { PAGENUMBER, LIMIT, SKIP } = normalizePagination(page, limit);
+
+  const whereCondition: Prisma.MedicalRecordsWhereInput = {
+    OR: [
+      {
+        patient: {
+          first_name: { contains: query, mode: "insensitive" },
+        },
+      },
+      {
+        patient: {
+          last_name: { contains: query, mode: "insensitive" },
+        },
+      },
+      {
+        patient_id: { contains: query, mode: "insensitive" },
+      },
+    ],
+  };
+
+  const [patients, totalRecords] = await Promise.all([
+    prisma.medicalRecords.findMany({
+      where: whereCondition,
+      include: {
+        patient: true,
+        diagnosis: true,
+      },
+      skip: SKIP,
+      take: LIMIT,
+      orderBy: { created_at: "desc" },
+    }),
+    prisma.medicalRecords.count({ where: whereCondition }),
+  ]);
+
+  const totalPages = Math.ceil(totalRecords / LIMIT);
+
+  return {
+    data: patients,
+    totalPages,
+    currentPage: PAGENUMBER,
+    totalRecords,
+  };
+}

@@ -8,6 +8,7 @@ import appointmentRouter from "./controllers/appointment.controller";
 import doctorRouter from "./controllers/doctor.controller";
 import adminRouter from "./controllers/admin.controller";
 import staffRouter from "./controllers/staff.controller";
+import medicalRecordRouter from "./controllers/medicalRecord.controller";
 
 const PORT = 3000;
 const app = express();
@@ -25,6 +26,7 @@ app.use("/staff", staffRouter);
 app.use("/patient", patientRouter);
 app.use("/doctor", doctorRouter);
 app.use("/appointment", appointmentRouter);
+app.use("/medical-record", medicalRecordRouter);
 
 app.use(unknownEndpoint);
 app.use(errorHandler);

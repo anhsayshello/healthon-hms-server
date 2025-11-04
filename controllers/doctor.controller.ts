@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { authMiddlewares } from "../middlewares";
 import doctorService from "../services/doctor/index";
+import type { AppointmentParams, SearchQueryParams } from "../types";
 
 const doctorRouter = Router();
 
@@ -8,12 +9,8 @@ doctorRouter.use(...authMiddlewares);
 
 doctorRouter.get("/", async (req, res, next) => {
   try {
-    const { query, page, limit } = req.query;
-    const result = await doctorService.getDoctors(
-      query as string,
-      Number(page),
-      Number(limit)
-    );
+    const params: SearchQueryParams = req.query;
+    const result = await doctorService.getDoctors(params);
     return res.status(200).json(result);
   } catch (error) {
     next(error);
@@ -23,14 +20,9 @@ doctorRouter.get("/", async (req, res, next) => {
 doctorRouter.get("/appointments", async (req, res, next) => {
   try {
     const uid = req.uid as string;
-    const { query, page, limit } = req.query;
+    const params: AppointmentParams = req.query;
 
-    const result = await doctorService.getDoctorAppointments(
-      uid,
-      query as string,
-      Number(page),
-      Number(limit)
-    );
+    const result = await doctorService.getDoctorAppointments(uid, params);
     return res.status(200).json(result);
   } catch (error) {
     next(error);

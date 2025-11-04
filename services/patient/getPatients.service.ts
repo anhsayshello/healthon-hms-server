@@ -1,12 +1,10 @@
 import prisma from "../../config/db";
+import type { SearchQueryParams } from "../../types";
 import normalizePagination from "../../utils/normalize-pagination";
 import { searchPatientDirect } from "../../utils/search-filters";
 
-export default async function getPatients(
-  query?: string,
-  page?: number,
-  limit?: number
-) {
+export default async function getPatients(params: SearchQueryParams) {
+  const { page, limit, query } = params;
   const { PAGENUMBER, LIMIT, SKIP } = normalizePagination(page, limit);
 
   const whereCondition = searchPatientDirect(query) ?? {};

@@ -2,6 +2,7 @@ import { Router } from "express";
 import { authMiddlewares } from "../middlewares";
 import type { Patient } from "@prisma/client";
 import patientService from "../services/patient/index";
+import type { AppointmentParams, SearchQueryParams } from "../types";
 
 const patientRouter = Router();
 
@@ -21,12 +22,8 @@ patientRouter.post("/upsert", async (req, res, next) => {
 
 patientRouter.get("/", async (req, res, next) => {
   try {
-    const { query, page, limit } = req.query;
-    const result = await patientService.getPatients(
-      query as string,
-      Number(page),
-      Number(limit)
-    );
+    const params: SearchQueryParams = req.query;
+    const result = await patientService.getPatients(params);
     return res.status(200).json(result);
   } catch (error) {
     next(error);
@@ -55,15 +52,9 @@ patientRouter.get("/statistic", async (req, res, next) => {
 
 patientRouter.get("/appointments", async (req, res, next) => {
   try {
-    const { page, limit, query } = req.query;
-    console.log(page);
+    const params: AppointmentParams = req.query;
     const uid = req.uid as string;
-    const result = await patientService.getPatientAppointments(
-      uid,
-      query as string,
-      Number(page),
-      Number(limit)
-    );
+    const result = await patientService.getPatientAppointments(uid, params);
     return res.status(200).json(result);
   } catch (error) {
     next(error);

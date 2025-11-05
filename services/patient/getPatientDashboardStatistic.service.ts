@@ -63,7 +63,7 @@ export default async function getPatientDashboardStatistics(uid: string) {
             },
           },
         },
-        take: 6,
+        take: 5,
       }),
       prisma.appointment.count({ where: { patient_id: uid } }),
     ]);

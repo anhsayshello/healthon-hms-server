@@ -1,6 +1,7 @@
 import { AppointmentStatus } from "@prisma/client";
 import prisma from "../../config/db";
 import AppError from "../../utils/app-error";
+import { endOfDay, startOfDay } from "date-fns";
 
 export default async function createAppointment(
   patient_id: string,
@@ -11,15 +12,13 @@ export default async function createAppointment(
   note?: string
 ) {
   const targetDate = new Date(appointment_date);
-  const startOfDay = new Date(targetDate.setHours(0, 0, 0, 0));
-  const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999));
 
   const existingAppointment = await prisma.appointment.findFirst({
     where: {
       patient_id,
       appointment_date: {
-        gte: startOfDay,
-        lte: endOfDay,
+        gte: startOfDay(targetDate),
+        lte: endOfDay(targetDate),
       },
       status: { not: AppointmentStatus.CANCELLED },
     },

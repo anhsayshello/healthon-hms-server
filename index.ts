@@ -9,6 +9,7 @@ import doctorRouter from "./controllers/doctor.controller";
 import adminRouter from "./controllers/admin.controller";
 import staffRouter from "./controllers/staff.controller";
 import medicalRecordRouter from "./controllers/medicalRecord.controller";
+import nurseRouter from "./controllers/nurse.controller";
 
 const PORT = 3000;
 const app = express();
@@ -22,6 +23,7 @@ app.use(
 
 app.use("/auth", authRouter);
 app.use("/admin", adminRouter);
+app.use("/nurse", nurseRouter);
 app.use("/staff", staffRouter);
 app.use("/patient", patientRouter);
 app.use("/doctor", doctorRouter);

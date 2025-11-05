@@ -2,7 +2,7 @@ import { Router } from "express";
 import { appCheckVerification } from "../middlewares/appCheckVerification";
 import authService from "../services/auth/auth.service";
 import { authMiddlewares } from "../middlewares";
-import medicalRecordService from "../services/medical";
+import medicalRecordService from "../services/medical-record";
 import type { SearchQueryParams } from "../types";
 
 const medicalRecordRouter = Router();

@@ -17,18 +17,6 @@ doctorRouter.get("/", async (req, res, next) => {
   }
 });
 
-doctorRouter.get("/appointments", async (req, res, next) => {
-  try {
-    const uid = req.uid as string;
-    const params: AppointmentParams = req.query;
-
-    const result = await doctorService.getDoctorAppointments(uid, params);
-    return res.status(200).json(result);
-  } catch (error) {
-    next(error);
-  }
-});
-
 doctorRouter.get("/statistic", async (req, res, next) => {
   try {
     const uid = req.uid as string;

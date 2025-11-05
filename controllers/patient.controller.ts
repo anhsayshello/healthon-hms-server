@@ -50,17 +50,6 @@ patientRouter.get("/statistic", async (req, res, next) => {
   }
 });
 
-patientRouter.get("/appointments", async (req, res, next) => {
-  try {
-    const params: AppointmentParams = req.query;
-    const uid = req.uid as string;
-    const result = await patientService.getPatientAppointments(uid, params);
-    return res.status(200).json(result);
-  } catch (error) {
-    next(error);
-  }
-});
-
 patientRouter.get("/:uid", async (req, res, next) => {
   try {
     const { uid } = req.params;

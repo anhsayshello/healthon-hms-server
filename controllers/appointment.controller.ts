@@ -36,6 +36,28 @@ appointmentRouter.get("/", async (req, res, next) => {
   }
 });
 
+appointmentRouter.get("/doctor", async (req, res, next) => {
+  try {
+    const uid = req.uid as string;
+    const params: AppointmentParams = req.query;
+    const result = await appointmentService.getDoctorAppointments(uid, params);
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
+appointmentRouter.get("/patient", async (req, res, next) => {
+  try {
+    const params: AppointmentParams = req.query;
+    const uid = req.uid as string;
+    const result = await appointmentService.getPatientAppointments(uid, params);
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
 appointmentRouter.patch("/:id", async (req, res, next) => {
   try {
     const uid = req.uid as string;

@@ -58,7 +58,7 @@ export default async function getAppointments(params: AppointmentParams) {
         },
       },
     },
-    orderBy: { created_at: "desc" },
+    orderBy: [{ appointment_date: "desc" }, { time: "asc" }],
     skip: SKIP,
     take: LIMIT,
   });

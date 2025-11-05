@@ -1,4 +1,4 @@
-import getMedicalRecords from "./medical-record.service";
+import getMedicalRecords from "./getMedicalRecords.service";
 
 const medicalRecordService = {
   getMedicalRecords,

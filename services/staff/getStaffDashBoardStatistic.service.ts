@@ -2,7 +2,7 @@ import prisma from "../../config/db";
 import getToday from "../../utils/utils";
 import appointmentService from "../appointment";
 
-export default async function getAdminDashboardStatistics() {
+export default async function getStaffDashBoardStatistic() {
   const today = getToday();
   const [
     totalPatients,
@@ -47,7 +47,7 @@ export default async function getAdminDashboardStatistics() {
         specialization: true,
         working_days: true,
       },
-      take: 6,
+      take: 5,
     }),
     prisma.appointment.count(),
   ]);

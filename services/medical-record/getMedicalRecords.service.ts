@@ -7,7 +7,7 @@ export default async function getMedicalRecords(params: SearchQueryParams) {
   const { query, page, limit } = params;
   const { PAGENUMBER, LIMIT, SKIP } = normalizePagination(page, limit);
 
-  const whereCondition: Prisma.MedicalRecordsWhereInput = {
+  const whereCondition: Prisma.MedicalRecordWhereInput = {
     OR: [
       {
         patient: {
@@ -26,7 +26,7 @@ export default async function getMedicalRecords(params: SearchQueryParams) {
   };
 
   const [patients, totalRecords] = await Promise.all([
-    prisma.medicalRecords.findMany({
+    prisma.medicalRecord.findMany({
       where: whereCondition,
       include: {
         patient: true,
@@ -36,7 +36,7 @@ export default async function getMedicalRecords(params: SearchQueryParams) {
       take: LIMIT,
       orderBy: { created_at: "desc" },
     }),
-    prisma.medicalRecords.count({ where: whereCondition }),
+    prisma.medicalRecord.count({ where: whereCondition }),
   ]);
 
   const totalPages = Math.ceil(totalRecords / LIMIT);

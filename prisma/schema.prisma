@@ -86,7 +86,7 @@ model Patient {
   photo_url                String?
 
   appointments             Appointment[]
-  medical                  MedicalRecords[]
+  medical                  MedicalRecord[]
   payments                 Payment[]
   ratings                  Rating[]
 
@@ -162,7 +162,7 @@ model Appointment {
   doctor           Doctor           @relation(fields: [doctor_id], references: [uid], onDelete: Cascade)
 
   bills            Payment[]
-  medical          MedicalRecords[]
+  medical          MedicalRecord[]
 
   reason           String?
   created_at       DateTime         @default(now())
@@ -218,19 +218,18 @@ model LabTest {
   service_id     Int       @unique
 
   services       Services  @relation(fields: [service_id], references: [id])
-  medical_record MedicalRecords @relation(fields: [record_id], references: [id], onDelete: Cascade)
+  medical_record MedicalRecord @relation(fields: [record_id], references: [id], onDelete: Cascade)
 
   created_at     DateTime  @default(now())
   updated_at     DateTime  @updatedAt
 }
 
-model MedicalRecords {
+model MedicalRecord {
   id             Int          @id @default(autoincrement())
   patient_id     String
   appointment_id Int
   doctor_id      String
   treatment_plan String?
-  prescriptions  String?
   lab_request    String?
 
   appointment    Appointment  @relation(fields: [appointment_id], references: [id], onDelete: Cascade)
@@ -240,6 +239,7 @@ model MedicalRecords {
 
   vital_signs    VitalSigns[]
   diagnosis      Diagnosis[]
+  prescriptions  Prescription[]
 
   created_at     DateTime     @default(now())
   updated_at     DateTime     @updatedAt
@@ -249,13 +249,13 @@ model VitalSigns {
   id                Int             @id @default(autoincrement())
   patient_id        String
   medical_id        Int
-  medical_record    MedicalRecords  @relation(fields: [medical_id], references: [id], onDelete: Cascade)
+  medical_record    MedicalRecord  @relation(fields: [medical_id], references: [id], onDelete: Cascade)
   body_temperature  Float
   systolic          Int
   diastolic         Int
-  heartRate         String
+  heart_rate         String
   respiratory_rate  Int?
-  oxygen_saturaion  Int?
+  oxygen_saturation  Int?
   weight            Float
   height            Float
 
@@ -275,11 +275,27 @@ model Diagnosis {
   prescribed_medications   String?
   follow_up_plan           String?
 
-  medical                  MedicalRecords  @relation(fields: [medical_id], references: [id], onDelete: Cascade)
+  medical                  MedicalRecord  @relation(fields: [medical_id], references: [id], onDelete: Cascade)
 
   created_at               DateTime        @default(now())
   updated_at               DateTime        @updatedAt
 }
+
+model Prescription {
+  id             Int             @id @default(autoincrement())
+  medical_id     Int
+  medication     String
+  dosage         String
+  frequency      String
+  duration       String
+  instructions   String?
+
+  medical_record MedicalRecord   @relation(fields: [medical_id], references: [id], onDelete: Cascade)
+
+  created_at     DateTime        @default(now())
+  updated_at     DateTime        @updatedAt
+}
+
 
 model AuditLog {
   id      Int   @id @default(autoincrement())

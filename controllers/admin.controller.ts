@@ -43,15 +43,6 @@ adminRouter.post("/staff", async (req, res, next) => {
   }
 });
 
-adminRouter.get("/statistic", async (req, res, next) => {
-  try {
-    const result = await adminService.getAdminDashboardStatistics();
-    return res.status(200).json(result);
-  } catch (error) {
-    next(error);
-  }
-});
-
 adminRouter.get("/users", async (req, res, next) => {
   try {
     const nextPageToken = req.query.nextPageToken as string | undefined;

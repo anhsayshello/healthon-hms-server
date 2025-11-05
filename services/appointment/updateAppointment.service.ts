@@ -10,7 +10,7 @@ export default async function updateAppointmentById(
   reason?: string,
   note?: string
 ) {
-  const { role, isPatient, isDoctor, isAdmin } = await getRole(uid);
+  const { role, isPatient, isDoctor, isNurse, isAdmin } = await getRole(uid);
 
   if (!role) {
     throw new AppError("User role not found", 403);
@@ -69,7 +69,7 @@ export default async function updateAppointmentById(
         note: note ?? null,
       },
     });
-  } else if (isAdmin) {
+  } else if (isAdmin || isNurse) {
     updatedAppointment = await prisma.appointment.update({
       where: { id },
       data: {

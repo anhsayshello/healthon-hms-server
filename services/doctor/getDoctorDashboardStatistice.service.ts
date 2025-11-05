@@ -59,7 +59,7 @@ export default async function getDoctorDashboardStatistics(uid: string) {
         specialization: true,
         working_days: true,
       },
-      take: 6,
+      take: 5,
     }),
     prisma.appointment.count({
       where: { doctor_id: uid },

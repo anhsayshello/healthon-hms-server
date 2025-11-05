@@ -17,6 +17,15 @@ staffRouter.get("/", async (req, res, next) => {
   }
 });
 
+staffRouter.get("/statistic", async (req, res, next) => {
+  try {
+    const result = await staffService.getStaffDashBoardStatistic();
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
 staffRouter.get("/:uid", async (req, res, next) => {
   try {
     const { uid } = req.params;

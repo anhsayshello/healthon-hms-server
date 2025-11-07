@@ -6,7 +6,7 @@ import normalizePagination from "../../utils/normalize-pagination";
 import { searchPatient } from "../../utils/search-filters";
 import { endOfDay, startOfDay } from "date-fns";
 
-export default async function getVitalSignsToday(params: SearchQueryParams) {
+export default async function getTodayVitalSigns(params: SearchQueryParams) {
   const { query, limit, page } = params;
 
   const { PAGENUMBER, LIMIT, SKIP } = normalizePagination(page, limit);

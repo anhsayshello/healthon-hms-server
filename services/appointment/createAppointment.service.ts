@@ -9,7 +9,7 @@ export default async function createAppointment(
   appointment_date: string,
   time: string,
   type: string,
-  note?: string
+  reason: string
 ) {
   const targetDate = new Date(appointment_date);
 
@@ -60,7 +60,7 @@ export default async function createAppointment(
       time,
       status: AppointmentStatus.PENDING,
       type,
-      note: note ?? null,
+      reason,
     },
   });
 

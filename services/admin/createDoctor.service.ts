@@ -1,4 +1,11 @@
-import { type Doctor, Prisma, Role, type Staff, Weekday } from "@prisma/client";
+import {
+  type Doctor,
+  Prisma,
+  Role,
+  type Staff,
+  Status,
+  Weekday,
+} from "@prisma/client";
 import { FirebaseAuthError, getAuth } from "firebase-admin/auth";
 import app from "../../config/firebase";
 import AppError from "../../utils/app-error";
@@ -65,6 +72,7 @@ export default async function createDoctor(
       department,
       photo_url,
       type,
+      availability_status: Status.ACTIVE,
       working_days: {
         create: working_days.map((day) => ({
           day,

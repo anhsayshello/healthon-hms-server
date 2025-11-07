@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { authMiddlewares } from "../middlewares";
 import doctorService from "../services/doctor/index";
-import type { AppointmentParams, SearchQueryParams } from "../types";
+import type { SearchQueryParams } from "../types";
 
 const doctorRouter = Router();
 

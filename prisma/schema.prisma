@@ -40,6 +40,13 @@ enum AppointmentStatus  {
   COMPLETED
 }
 
+enum LabTestStatus  {
+  PENDING 
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
 enum Weekday {
   MONDAY
   TUESDAY
@@ -48,6 +55,12 @@ enum Weekday {
   FRIDAY
   SATURDAY
   SUNDAY
+}
+
+enum Currency {
+  VND
+  USD
+  EUR
 }
 
 enum PaymentMethod {
@@ -88,7 +101,6 @@ model Patient {
   appointments             Appointment[]
   medical                  MedicalRecord[]
   payments                 Payment[]
-  ratings                  Rating[]
 
   created_at                DateTime          @default(now())
   updated_at                DateTime          @updatedAt
@@ -110,7 +122,6 @@ model Doctor {
   type                     JobType @default(FULL)
   working_days             WorkingDays[]
   appointments             Appointment[]
-  ratings                  Rating[]
   diagnosis                Diagnosis[]
 
   created_at                DateTime          @default(now())
@@ -144,6 +155,8 @@ model Staff {
   role                     Role
   status                   Status @default(ACTIVE)
 
+  lab_tests                LabTest[]
+
   created_at                DateTime          @default(now())
   updated_at                DateTime          @updatedAt
 }
@@ -161,7 +174,7 @@ model Appointment {
   patient          Patient          @relation(fields: [patient_id], references: [uid], onDelete: Cascade)
   doctor           Doctor           @relation(fields: [doctor_id], references: [uid], onDelete: Cascade)
 
-  bills            Payment[]
+  payment          Payment?
   medical          MedicalRecord[]
 
   reason           String?
@@ -171,54 +184,70 @@ model Appointment {
 
 model Payment {
   id              Int               @id   @default(autoincrement())
-  bill_id         Int?
   patient_id      String
   appointment_id  Int               @unique
   bill_date       DateTime
-  payment_date    DateTime
+  payment_date    DateTime?
   discount        Float
   total_amount    Float
   amount_paid     Float
 
   payment_method  PaymentMethod     @default(CASH)
   status          PaymentStatus     @default(UNPAID)
-  receipt_number  Int               @default(autoincrement())
+  receipt_number  String               @unique @default(cuid()) 
 
   appointment     Appointment           @relation(fields: [appointment_id], references: [id], onDelete: Cascade)
   patient         Patient               @relation(fields: [patient_id], references: [uid], onDelete: Cascade)
-  bills           PatientBills[]
+  lab_bills       LabBill[]         
+  medication_bills MedicationBill[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 }
 
-model PatientBills {
+model LabBill {
   id            Int       @id @default(autoincrement())
-  bill_id       Int
+  payment_id       Int
   service_id    Int
   service_date  DateTime
   quantity      Int 
   unit_cost     Float
   total_cost    Float
 
-  service Services        @relation(fields: [service_id], references: [id])
-  payment Payment         @relation(fields: [bill_id], references: [id], onDelete: Cascade)
+  service Service        @relation(fields: [service_id], references: [id])
+  payment Payment         @relation(fields: [payment_id], references: [id], onDelete: Cascade)
 
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
 }
 
+model Service {
+  id           Int           @id @default(autoincrement())
+  service_name String
+  description  String
+  price        Float
+  currency     Currency    @default(VND)
+
+  lab_tests      LabTest[]
+  lab_bills        LabBill[]
+
+  created_at   DateTime      @default(now())
+  updated_at   DateTime      @updatedAt
+}
+
 model LabTest {
   id             Int       @id @default(autoincrement())
-  record_id      Int
+  service_id     Int      
+  medical_id     Int
+  technician_id  String?
   test_date      DateTime
-  result         String
-  status         String
-  notes          String
-  service_id     Int       @unique
+  result         String?
+  status         LabTestStatus  @default(PENDING) 
+  notes          String?
 
-  services       Services  @relation(fields: [service_id], references: [id])
-  medical_record MedicalRecord @relation(fields: [record_id], references: [id], onDelete: Cascade)
+  service         Service  @relation(fields: [service_id], references: [id])
+  medical_record  MedicalRecord @relation(fields: [medical_id], references: [id], onDelete: Cascade)
+  technician      Staff?    @relation(fields: [technician_id], references: [uid])
 
   created_at     DateTime  @default(now())
   updated_at     DateTime  @updatedAt
@@ -249,15 +278,16 @@ model VitalSigns {
   id                Int             @id @default(autoincrement())
   patient_id        String
   medical_id        Int
-  medical_record    MedicalRecord  @relation(fields: [medical_id], references: [id], onDelete: Cascade)
   body_temperature  Float
   systolic          Int
   diastolic         Int
-  heart_rate         String
+  heart_rate        Int
   respiratory_rate  Int?
   oxygen_saturation  Int?
   weight            Float
   height            Float
+
+  medical_record    MedicalRecord  @relation(fields: [medical_id], references: [id], onDelete: Cascade)
 
   created_at        DateTime        @default(now())
   updated_at        DateTime        @updatedAt
@@ -268,32 +298,64 @@ model Diagnosis {
   patient_id               String
   medical_id               Int
   doctor_id                String
-  doctor                   Doctor          @relation(fields: [doctor_id], references: [uid])
   symptoms                 String
   diagnosis                String
   notes                    String?
-  prescribed_medications   String?
   follow_up_plan           String?
 
+  doctor                   Doctor          @relation(fields: [doctor_id], references: [uid])
   medical                  MedicalRecord  @relation(fields: [medical_id], references: [id], onDelete: Cascade)
 
   created_at               DateTime        @default(now())
   updated_at               DateTime        @updatedAt
 }
 
+model Medication {
+  id             Int       @id @default(autoincrement())
+  medication_name String
+  description    String?
+  unit_price     Float     
+  unit_type      String    
+  manufacturer   String?
+  stock_quantity Int       @default(0) 
+  
+  prescriptions     Prescription[]
+  medication_bills  MedicationBill[]
+  
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+}
+
 model Prescription {
   id             Int             @id @default(autoincrement())
   medical_id     Int
-  medication     String
+  medication_id  Int             
+  quantity       Int             
   dosage         String
   frequency      String
   duration       String
   instructions   String?
 
   medical_record MedicalRecord   @relation(fields: [medical_id], references: [id], onDelete: Cascade)
+  medication     Medication      @relation(fields: [medication_id], references: [id]) 
 
   created_at     DateTime        @default(now())
   updated_at     DateTime        @updatedAt
+}
+
+model MedicationBill {
+  id            Int       @id @default(autoincrement())
+  payment_id       Int
+  medication_id Int
+  quantity      Int 
+  unit_cost     Float
+  total_cost    Float
+
+  medication    Medication      @relation(fields: [medication_id], references: [id])
+  payment       Payment         @relation(fields: [payment_id], references: [id], onDelete: Cascade)
+
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
 }
 
 
@@ -307,30 +369,4 @@ model AuditLog {
 
   created_at     DateTime      @default(now())
   updated_at     DateTime      @updatedAt
-}
-
-model Rating {
-  id           Int        @id   @default(autoincrement())
-  staff_id     String
-  patient_id   String
-  rating       Int
-  comment      String?
-
-  doctor       Doctor     @relation(fields: [staff_id], references: [uid], onDelete: Cascade)
-  patient      Patient    @relation(fields: [patient_id], references: [uid], onDelete: Cascade)
-
-  created_at   DateTime   @default(now())
-  updated_at   DateTime   @updatedAt
-}
-
-model Services {
-  id           Int           @id @default(autoincrement())
-  service_name String
-  description  String
-  price        Float
-  labtest      LabTest?
-  bills        PatientBills[]
-
-  created_at   DateTime      @default(now())
-  updated_at   DateTime      @updatedAt
 }

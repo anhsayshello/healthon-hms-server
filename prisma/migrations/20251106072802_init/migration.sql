@@ -14,6 +14,9 @@ CREATE TYPE "public"."Gender" AS ENUM ('MALE', 'FEMALE');
 CREATE TYPE "public"."AppointmentStatus" AS ENUM ('PENDING', 'SCHEDULED', 'CANCELLED', 'COMPLETED');
 
 -- CreateEnum
+CREATE TYPE "public"."LabTestStatus" AS ENUM ('PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED');
+
+-- CreateEnum
 CREATE TYPE "public"."Weekday" AS ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY');
 
 -- CreateEnum
@@ -124,17 +127,16 @@ CREATE TABLE "public"."Appointment" (
 -- CreateTable
 CREATE TABLE "public"."Payment" (
     "id" SERIAL NOT NULL,
-    "bill_id" INTEGER,
     "patient_id" TEXT NOT NULL,
     "appointment_id" INTEGER NOT NULL,
     "bill_date" TIMESTAMP(3) NOT NULL,
-    "payment_date" TIMESTAMP(3) NOT NULL,
+    "payment_date" TIMESTAMP(3),
     "discount" DOUBLE PRECISION NOT NULL,
     "total_amount" DOUBLE PRECISION NOT NULL,
     "amount_paid" DOUBLE PRECISION NOT NULL,
     "payment_method" "public"."PaymentMethod" NOT NULL DEFAULT 'CASH',
     "status" "public"."PaymentStatus" NOT NULL DEFAULT 'UNPAID',
-    "receipt_number" SERIAL NOT NULL,
+    "receipt_number" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -142,9 +144,9 @@ CREATE TABLE "public"."Payment" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."PatientBills" (
+CREATE TABLE "public"."LabBill" (
     "id" SERIAL NOT NULL,
-    "bill_id" INTEGER NOT NULL,
+    "payment_id" INTEGER NOT NULL,
     "service_id" INTEGER NOT NULL,
     "service_date" TIMESTAMP(3) NOT NULL,
     "quantity" INTEGER NOT NULL,
@@ -153,18 +155,31 @@ CREATE TABLE "public"."PatientBills" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "PatientBills_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "LabBill_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."Service" (
+    "id" SERIAL NOT NULL,
+    "service_name" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "price" DOUBLE PRECISION NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Service_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "public"."LabTest" (
     "id" SERIAL NOT NULL,
-    "record_id" INTEGER NOT NULL,
-    "test_date" TIMESTAMP(3) NOT NULL,
-    "result" TEXT NOT NULL,
-    "status" TEXT NOT NULL,
-    "notes" TEXT NOT NULL,
     "service_id" INTEGER NOT NULL,
+    "medical_id" INTEGER NOT NULL,
+    "technician_id" TEXT,
+    "test_date" TIMESTAMP(3) NOT NULL,
+    "result" TEXT,
+    "status" "public"."LabTestStatus" NOT NULL DEFAULT 'PENDING',
+    "notes" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -172,19 +187,18 @@ CREATE TABLE "public"."LabTest" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."MedicalRecords" (
+CREATE TABLE "public"."MedicalRecord" (
     "id" SERIAL NOT NULL,
     "patient_id" TEXT NOT NULL,
     "appointment_id" INTEGER NOT NULL,
     "doctor_id" TEXT NOT NULL,
     "treatment_plan" TEXT,
-    "prescriptions" TEXT,
     "lab_request" TEXT,
     "notes" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "MedicalRecords_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "MedicalRecord_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -195,9 +209,9 @@ CREATE TABLE "public"."VitalSigns" (
     "body_temperature" DOUBLE PRECISION NOT NULL,
     "systolic" INTEGER NOT NULL,
     "diastolic" INTEGER NOT NULL,
-    "heartRate" TEXT NOT NULL,
+    "heart_rate" INTEGER NOT NULL,
     "respiratory_rate" INTEGER,
-    "oxygen_saturaion" INTEGER,
+    "oxygen_saturation" INTEGER,
     "weight" DOUBLE PRECISION NOT NULL,
     "height" DOUBLE PRECISION NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -215,12 +229,56 @@ CREATE TABLE "public"."Diagnosis" (
     "symptoms" TEXT NOT NULL,
     "diagnosis" TEXT NOT NULL,
     "notes" TEXT,
-    "prescribed_medications" TEXT,
     "follow_up_plan" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Diagnosis_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."Medication" (
+    "id" SERIAL NOT NULL,
+    "medication_name" TEXT NOT NULL,
+    "description" TEXT,
+    "unit_price" DOUBLE PRECISION NOT NULL,
+    "unit_type" TEXT NOT NULL,
+    "manufacturer" TEXT,
+    "stock_quantity" INTEGER NOT NULL DEFAULT 0,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Medication_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."Prescription" (
+    "id" SERIAL NOT NULL,
+    "medical_id" INTEGER NOT NULL,
+    "medication_id" INTEGER NOT NULL,
+    "quantity" INTEGER NOT NULL,
+    "dosage" TEXT NOT NULL,
+    "frequency" TEXT NOT NULL,
+    "duration" TEXT NOT NULL,
+    "instructions" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Prescription_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."MedicationBill" (
+    "id" SERIAL NOT NULL,
+    "payment_id" INTEGER NOT NULL,
+    "medication_id" INTEGER NOT NULL,
+    "quantity" INTEGER NOT NULL,
+    "unit_cost" DOUBLE PRECISION NOT NULL,
+    "total_cost" DOUBLE PRECISION NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "MedicationBill_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -237,31 +295,6 @@ CREATE TABLE "public"."AuditLog" (
     CONSTRAINT "AuditLog_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
-CREATE TABLE "public"."Rating" (
-    "id" SERIAL NOT NULL,
-    "staff_id" TEXT NOT NULL,
-    "patient_id" TEXT NOT NULL,
-    "rating" INTEGER NOT NULL,
-    "comment" TEXT,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "Rating_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "public"."Services" (
-    "id" SERIAL NOT NULL,
-    "service_name" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
-    "price" DOUBLE PRECISION NOT NULL,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "Services_pkey" PRIMARY KEY ("id")
-);
-
 -- CreateIndex
 CREATE UNIQUE INDEX "Patient_email_key" ON "public"."Patient"("email");
 
@@ -275,7 +308,7 @@ CREATE UNIQUE INDEX "Staff_email_key" ON "public"."Staff"("email");
 CREATE UNIQUE INDEX "Payment_appointment_id_key" ON "public"."Payment"("appointment_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "LabTest_service_id_key" ON "public"."LabTest"("service_id");
+CREATE UNIQUE INDEX "Payment_receipt_number_key" ON "public"."Payment"("receipt_number");
 
 -- AddForeignKey
 ALTER TABLE "public"."WorkingDays" ADD CONSTRAINT "WorkingDays_doctor_id_fkey" FOREIGN KEY ("doctor_id") REFERENCES "public"."Doctor"("uid") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -293,34 +326,43 @@ ALTER TABLE "public"."Payment" ADD CONSTRAINT "Payment_appointment_id_fkey" FORE
 ALTER TABLE "public"."Payment" ADD CONSTRAINT "Payment_patient_id_fkey" FOREIGN KEY ("patient_id") REFERENCES "public"."Patient"("uid") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientBills" ADD CONSTRAINT "PatientBills_service_id_fkey" FOREIGN KEY ("service_id") REFERENCES "public"."Services"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."LabBill" ADD CONSTRAINT "LabBill_service_id_fkey" FOREIGN KEY ("service_id") REFERENCES "public"."Service"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientBills" ADD CONSTRAINT "PatientBills_bill_id_fkey" FOREIGN KEY ("bill_id") REFERENCES "public"."Payment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."LabBill" ADD CONSTRAINT "LabBill_payment_id_fkey" FOREIGN KEY ("payment_id") REFERENCES "public"."Payment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."LabTest" ADD CONSTRAINT "LabTest_service_id_fkey" FOREIGN KEY ("service_id") REFERENCES "public"."Services"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."LabTest" ADD CONSTRAINT "LabTest_service_id_fkey" FOREIGN KEY ("service_id") REFERENCES "public"."Service"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."LabTest" ADD CONSTRAINT "LabTest_record_id_fkey" FOREIGN KEY ("record_id") REFERENCES "public"."MedicalRecords"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."LabTest" ADD CONSTRAINT "LabTest_medical_id_fkey" FOREIGN KEY ("medical_id") REFERENCES "public"."MedicalRecord"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."MedicalRecords" ADD CONSTRAINT "MedicalRecords_appointment_id_fkey" FOREIGN KEY ("appointment_id") REFERENCES "public"."Appointment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."LabTest" ADD CONSTRAINT "LabTest_technician_id_fkey" FOREIGN KEY ("technician_id") REFERENCES "public"."Staff"("uid") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."MedicalRecords" ADD CONSTRAINT "MedicalRecords_patient_id_fkey" FOREIGN KEY ("patient_id") REFERENCES "public"."Patient"("uid") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."MedicalRecord" ADD CONSTRAINT "MedicalRecord_appointment_id_fkey" FOREIGN KEY ("appointment_id") REFERENCES "public"."Appointment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."VitalSigns" ADD CONSTRAINT "VitalSigns_medical_id_fkey" FOREIGN KEY ("medical_id") REFERENCES "public"."MedicalRecords"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."MedicalRecord" ADD CONSTRAINT "MedicalRecord_patient_id_fkey" FOREIGN KEY ("patient_id") REFERENCES "public"."Patient"("uid") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."VitalSigns" ADD CONSTRAINT "VitalSigns_medical_id_fkey" FOREIGN KEY ("medical_id") REFERENCES "public"."MedicalRecord"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."Diagnosis" ADD CONSTRAINT "Diagnosis_doctor_id_fkey" FOREIGN KEY ("doctor_id") REFERENCES "public"."Doctor"("uid") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Diagnosis" ADD CONSTRAINT "Diagnosis_medical_id_fkey" FOREIGN KEY ("medical_id") REFERENCES "public"."MedicalRecords"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."Diagnosis" ADD CONSTRAINT "Diagnosis_medical_id_fkey" FOREIGN KEY ("medical_id") REFERENCES "public"."MedicalRecord"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Rating" ADD CONSTRAINT "Rating_staff_id_fkey" FOREIGN KEY ("staff_id") REFERENCES "public"."Doctor"("uid") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."Prescription" ADD CONSTRAINT "Prescription_medical_id_fkey" FOREIGN KEY ("medical_id") REFERENCES "public"."MedicalRecord"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Rating" ADD CONSTRAINT "Rating_patient_id_fkey" FOREIGN KEY ("patient_id") REFERENCES "public"."Patient"("uid") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."Prescription" ADD CONSTRAINT "Prescription_medication_id_fkey" FOREIGN KEY ("medication_id") REFERENCES "public"."Medication"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."MedicationBill" ADD CONSTRAINT "MedicationBill_medication_id_fkey" FOREIGN KEY ("medication_id") REFERENCES "public"."Medication"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."MedicationBill" ADD CONSTRAINT "MedicationBill_payment_id_fkey" FOREIGN KEY ("payment_id") REFERENCES "public"."Payment"("id") ON DELETE CASCADE ON UPDATE CASCADE;

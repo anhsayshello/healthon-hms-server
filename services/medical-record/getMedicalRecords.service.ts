@@ -7,29 +7,38 @@ export default async function getMedicalRecords(params: SearchQueryParams) {
   const { query, page, limit } = params;
   const { PAGENUMBER, LIMIT, SKIP } = normalizePagination(page, limit);
 
-  const whereCondition: Prisma.MedicalRecordWhereInput = {
-    OR: [
-      {
-        patient: {
-          first_name: { contains: query, mode: "insensitive" },
-        },
-      },
-      {
-        patient: {
-          last_name: { contains: query, mode: "insensitive" },
-        },
-      },
-      {
-        patient_id: { contains: query, mode: "insensitive" },
-      },
-    ],
-  };
+  const whereCondition: Prisma.MedicalRecordWhereInput = query
+    ? {
+        OR: [
+          {
+            patient: {
+              first_name: { contains: query, mode: "insensitive" },
+            },
+          },
+          {
+            patient: {
+              last_name: { contains: query, mode: "insensitive" },
+            },
+          },
+          {
+            patient_id: { contains: query, mode: "insensitive" },
+          },
+        ],
+      }
+    : {};
 
   const [patients, totalRecords] = await Promise.all([
     prisma.medicalRecord.findMany({
       where: whereCondition,
       include: {
-        patient: true,
+        patient: {
+          select: {
+            first_name: true,
+            last_name: true,
+            photo_url: true,
+            gender: true,
+          },
+        },
         diagnosis: true,
       },
       skip: SKIP,

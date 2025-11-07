@@ -10,14 +10,14 @@ appointmentRouter.use(...authMiddlewares);
 appointmentRouter.post("/", async (req, res, next) => {
   try {
     const uid = req.uid as string;
-    const { doctor_id, type, appointment_date, time, note } = req.body;
+    const { doctor_id, type, appointment_date, time, reason } = req.body;
     const result = await appointmentService.createAppointment(
       uid,
       doctor_id,
       appointment_date,
       time,
       type,
-      note
+      reason
     );
     return res.status(201).json(result);
   } catch (error) {

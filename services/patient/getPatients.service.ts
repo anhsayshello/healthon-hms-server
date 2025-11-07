@@ -19,9 +19,11 @@ export default async function getPatients(params: SearchQueryParams) {
     prisma.patient.count({ where: whereCondition }),
   ]);
 
+  const totalPages = Math.ceil(totalRecords / LIMIT);
+
   return {
     data,
-    totalPages: Math.ceil(totalRecords / LIMIT),
+    totalPages,
     currentPage: PAGENUMBER,
     totalRecords,
   };

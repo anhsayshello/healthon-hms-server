@@ -31,7 +31,11 @@ export default async function updateAppointmentById(
     throw new AppError(`Appointment is already ${status.toLowerCase()}`, 400);
   }
 
-  let updatedAppointment = null;
+  const updateData = {
+    status,
+    ...(reason !== undefined && { reason }),
+    ...(note !== undefined && { note }),
+  };
 
   if (isPatient) {
     if (appointment.patient_id !== uid) {
@@ -40,19 +44,9 @@ export default async function updateAppointmentById(
         403
       );
     }
-
     if (status !== AppointmentStatus.CANCELLED) {
       throw new AppError("You can only cancel your appointments.", 400);
     }
-
-    updatedAppointment = await prisma.appointment.update({
-      where: { id },
-      data: {
-        status: AppointmentStatus.CANCELLED,
-        reason: reason ?? null,
-        note: note ?? null,
-      },
-    });
   } else if (isDoctor) {
     if (appointment.doctor_id !== uid) {
       throw new AppError(
@@ -60,27 +54,14 @@ export default async function updateAppointmentById(
         403
       );
     }
-
-    updatedAppointment = await prisma.appointment.update({
-      where: { id },
-      data: {
-        status,
-        reason: reason ?? null,
-        note: note ?? null,
-      },
-    });
-  } else if (isAdmin || isNurse) {
-    updatedAppointment = await prisma.appointment.update({
-      where: { id },
-      data: {
-        status,
-        reason: reason ?? null,
-        note: note ?? null,
-      },
-    });
-  } else {
+  } else if (!isAdmin && !isNurse) {
     throw new AppError("You are not authorized to update appointments.", 403);
   }
+
+  const updatedAppointment = await prisma.appointment.update({
+    where: { id },
+    data: updateData,
+  });
 
   return updatedAppointment;
 }

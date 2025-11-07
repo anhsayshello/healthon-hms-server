@@ -3,10 +3,11 @@ import { authMiddlewares } from "../middlewares";
 import nurseService from "../services/nurse";
 import type { SearchQueryParams } from "../types";
 import type { VitalSigns } from "@prisma/client";
+import { requireNurse } from "../middlewares/requireRoles";
 
 const nurseRouter = Router();
 
-nurseRouter.use(...authMiddlewares);
+nurseRouter.use(...authMiddlewares, requireNurse);
 
 nurseRouter.post("/vital-signs", async (req, res, next) => {
   try {
@@ -27,7 +28,7 @@ nurseRouter.post("/vital-signs", async (req, res, next) => {
 nurseRouter.get("/vital-signs", async (req, res, next) => {
   try {
     const params: SearchQueryParams = req.query;
-    const result = await nurseService.getVitalSignsToday(params);
+    const result = await nurseService.getTodayVitalSigns(params);
     return res.status(200).json(result);
   } catch (error) {
     next(error);

@@ -1,9 +1,8 @@
 import { Router } from "express";
 import { authMiddlewares } from "../middlewares";
 import type { Doctor, Staff, Weekday } from "@prisma/client";
-import { requireAdmin } from "../middlewares/requireAdmin";
+import { requireAdmin } from "../middlewares/requireRoles";
 import adminService from "../services/admin/index";
-import type { AppointmentParams } from "../types";
 
 const adminRouter = Router();
 

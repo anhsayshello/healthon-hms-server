@@ -1,8 +1,8 @@
 import createVitalSigns from "./createVitalSigns.service";
-import getVitalSignsToday from "./getVitalSignsToday.service";
+import getTodayVitalSigns from "./getTodayVitalSigns.service";
 
 const nurseService = {
-  getVitalSignsToday,
   createVitalSigns,
+  getTodayVitalSigns,
 };
 export default nurseService;

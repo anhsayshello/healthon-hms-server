@@ -17,7 +17,8 @@ export default async function processAppointments(appointments: Appointment[]) {
 
       if (
         appointmentDate >= startOfYear(new Date()) &&
-        appointmentDate <= endOfMonth(new Date())
+        appointmentDate <= endOfMonth(new Date()) &&
+        monthlyData[monthIndex]
       ) {
         monthlyData[monthIndex].appointment += 1;
 

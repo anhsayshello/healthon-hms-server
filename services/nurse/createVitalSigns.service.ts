@@ -18,6 +18,7 @@ export default async function createVitalSigns(
     weight,
     height,
   } = props;
+
   return await prisma.$transaction(async (tx) => {
     const appointment = await tx.appointment.findUniqueOrThrow({
       where: { id: appointment_id, status: AppointmentStatus.SCHEDULED },

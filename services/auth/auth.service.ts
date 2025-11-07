@@ -5,8 +5,6 @@ import { Role } from "@prisma/client";
 
 const authService = {
   async auth(idToken: string) {
-    console.log(idToken);
-
     let decodedToken;
     try {
       decodedToken = await getAuth().verifyIdToken(idToken);

@@ -2,6 +2,7 @@ import { FirebaseAuthError, getAuth } from "firebase-admin/auth";
 import app from "../../config/firebase";
 import AppError from "../../utils/app-error";
 import prisma from "../../config/db";
+import getRole from "../../utils/get-role";
 
 export default async function setUserAccess(uid: string, disabled: boolean) {
   try {
@@ -14,12 +15,15 @@ export default async function setUserAccess(uid: string, disabled: boolean) {
     }
 
     await getAuth(app).updateUser(uid, { disabled });
-    await prisma.staff.update({
-      where: { uid },
-      data: {
-        status: disabled ? "INACTIVE" : "ACTIVE",
-      },
-    });
+    const { isStaff } = await getRole(uid);
+    if (isStaff) {
+      await prisma.staff.update({
+        where: { uid },
+        data: {
+          status: disabled ? "INACTIVE" : "ACTIVE",
+        },
+      });
+    }
 
     const action = disabled ? "Disabled" : "Enabled";
     return {

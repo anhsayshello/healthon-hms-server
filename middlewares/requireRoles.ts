@@ -1,0 +1,27 @@
+import { getAuth } from "firebase-admin/auth";
+import app from "../config/firebase";
+import { Role } from "@prisma/client";
+
+const requireRoles = (allowedRoles: Role[]) => {
+  return async (req, res, next) => {
+    const currentUser = await getAuth(app).getUser(req.uid);
+    const role = currentUser.customClaims?.role as Role;
+
+    if (!role || !allowedRoles.includes(role)) {
+      return res.status(403).json({
+        message: "Forbidden: Access denied",
+      });
+    }
+    next();
+  };
+};
+
+export const requireAdmin = requireRoles([Role.ADMIN]);
+export const requireNurse = requireRoles([Role.NURSE]);
+export const requireDoctor = requireRoles([Role.DOCTOR]);
+export const requireStaff = requireRoles([
+  Role.ADMIN,
+  Role.NURSE,
+  Role.LAB_TECHNICIAN,
+  Role.CASHIER,
+]);

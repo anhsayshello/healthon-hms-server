@@ -16,15 +16,27 @@ export default async function updateAppointmentById(
     throw new AppError("User role not found", 403);
   }
 
-  const appointment = await prisma.appointment.findUnique({ where: { id } });
+  const appointment = await prisma.appointment.findUnique({
+    where: { id },
+    include: { medical: { select: { id: true } } },
+  });
   if (!appointment) {
     throw new AppError("Appointment not found", 404);
   }
 
+  const hasMedicalRecord = appointment.medical.length > 0;
+
   if (appointment.status === AppointmentStatus.COMPLETED) {
-    throw new AppError("This appointment has already been completed");
+    throw new AppError("This appointment has already been completed", 400);
   } else if (appointment.status === AppointmentStatus.CANCELLED) {
-    throw new AppError("This appointment has already been cancelled");
+    throw new AppError("This appointment has already been cancelled", 400);
+  }
+
+  if (status === AppointmentStatus.CANCELLED && hasMedicalRecord) {
+    throw new AppError(
+      "This appointment cannot be cancelled because medical examination has already started.",
+      400
+    );
   }
 
   if (appointment.status === status) {

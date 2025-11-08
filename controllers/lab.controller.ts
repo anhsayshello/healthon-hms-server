@@ -17,6 +17,16 @@ labRouter.get("/services", async (req, res, next) => {
   }
 });
 
+labRouter.get("/tests", async (req, res, next) => {
+  try {
+    const params: SearchQueryParams = req.query;
+    const result = await labService.getLabTests(params);
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
 labRouter.get("/tests/:id", async (req, res, next) => {
   try {
     const { id } = req.params;

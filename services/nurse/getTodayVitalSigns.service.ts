@@ -1,6 +1,5 @@
 import { AppointmentStatus, Prisma } from "@prisma/client";
 import prisma from "../../config/db";
-import getToday from "../../utils/utils";
 import type { SearchQueryParams } from "../../types";
 import normalizePagination from "../../utils/normalize-pagination";
 import { searchPatient } from "../../utils/search-filters";

@@ -123,7 +123,8 @@ model Doctor {
   working_days             WorkingDays[]
   appointments             Appointment[]
   diagnosis                Diagnosis[]
-
+  medical_records         MedicalRecord[]
+  
   created_at                DateTime          @default(now())
   updated_at                DateTime          @updatedAt
 }
@@ -251,6 +252,8 @@ model LabTest {
 
   created_at     DateTime  @default(now())
   updated_at     DateTime  @updatedAt
+
+  @@unique([service_id, medical_id])
 }
 
 model MedicalRecord {
@@ -262,6 +265,7 @@ model MedicalRecord {
   lab_request    String?
 
   appointment    Appointment  @relation(fields: [appointment_id], references: [id], onDelete: Cascade)
+  doctor         Doctor       @relation(fields: [doctor_id], references: [uid], onDelete: Cascade)
   patient        Patient      @relation(fields: [patient_id], references: [uid], onDelete: Cascade)
   lab_test       LabTest[]
   notes          String?
@@ -276,7 +280,6 @@ model MedicalRecord {
 
 model VitalSigns {
   id                Int             @id @default(autoincrement())
-  patient_id        String
   medical_id        Int
   body_temperature  Float
   systolic          Int
@@ -295,7 +298,6 @@ model VitalSigns {
 
 model Diagnosis {
   id                       Int             @id @default(autoincrement())
-  patient_id               String
   medical_id               Int
   doctor_id                String
   symptoms                 String

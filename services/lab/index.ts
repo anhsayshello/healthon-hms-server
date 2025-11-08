@@ -5,6 +5,7 @@ import finishLabTest from "./finishLabTest.service";
 import getLabServices from "./getLabServices.service";
 import getLabTestById from "./getLabTestById.service";
 import getLabTestRequests from "./getLabTestRequests.service";
+import getLabTests from "./getLabTests.service";
 import startLabTest from "./startLabTest.service";
 
 const labService = {
@@ -13,6 +14,7 @@ const labService = {
   createLabRequest,
   cancelLabRequest,
   getLabTestRequests,
+  getLabTests,
   startLabTest,
   finishLabTest,
   getLabTestById,

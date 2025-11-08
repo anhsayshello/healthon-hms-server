@@ -12,7 +12,11 @@ export default async function getMedicalRecordById(id: number) {
       },
       vital_signs: true,
       diagnosis: true,
-      lab_test: true,
+      lab_test: {
+        include: {
+          service: true,
+        },
+      },
       prescriptions: true,
     },
   });

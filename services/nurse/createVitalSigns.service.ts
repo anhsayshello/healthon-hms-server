@@ -49,7 +49,6 @@ export default async function createVitalSigns(
 
     const newVitalSigns = await tx.vitalSigns.create({
       data: {
-        patient_id: appointment.patient_id,
         medical_id: medicalRecord.id,
         body_temperature,
         systolic,

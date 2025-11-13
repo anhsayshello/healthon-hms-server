@@ -11,6 +11,7 @@ import staffRouter from "./controllers/staff.controller";
 import medicalRecordRouter from "./controllers/medicalRecord.controller";
 import nurseRouter from "./controllers/nurse.controller";
 import labRouter from "./controllers/lab.controller";
+import medicationRouter from "./controllers/medication.controller";
 
 const PORT = 3000;
 const app = express();
@@ -29,6 +30,7 @@ app.use("/staff", staffRouter);
 app.use("/patient", patientRouter);
 app.use("/doctor", doctorRouter);
 app.use("/appointment", appointmentRouter);
+app.use("/medication", medicationRouter);
 app.use("/medical-record", medicalRecordRouter);
 app.use("/lab", labRouter);
 

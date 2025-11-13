@@ -28,7 +28,6 @@ appointmentRouter.post("/", async (req, res, next) => {
 appointmentRouter.get("/", async (req, res, next) => {
   try {
     const params: AppointmentParams = req.query;
-    console.log(params.query);
     const result = await appointmentService.getAppointments(params);
     return res.status(200).json(result);
   } catch (error) {

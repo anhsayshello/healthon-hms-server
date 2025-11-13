@@ -1,4 +1,3 @@
-import { LabTestStatus } from "@prisma/client";
 import prisma from "../../config/db";
 import type { SearchQueryParams } from "../../types";
 import normalizePagination from "../../utils/normalize-pagination";

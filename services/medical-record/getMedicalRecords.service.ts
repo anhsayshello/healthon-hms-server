@@ -39,7 +39,7 @@ export default async function getMedicalRecords(params: SearchQueryParams) {
             gender: true,
           },
         },
-        diagnosis: true,
+        diagnoses: true,
       },
       skip: SKIP,
       take: LIMIT,

@@ -9,7 +9,7 @@ export default async function getLabTestById(id: number) {
       medical_record: {
         include: {
           patient: true,
-          appointment: { include: { doctor: true } },
+          doctor: true,
         },
       },
     },

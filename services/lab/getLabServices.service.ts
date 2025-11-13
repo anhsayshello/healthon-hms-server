@@ -8,7 +8,6 @@ export default async function getLabServices(params: SearchQueryParams) {
 
   const [services, totalRecords] = await Promise.all([
     prisma.service.findMany({
-      orderBy: { created_at: "asc" },
       skip: SKIP,
       take: LIMIT,
     }),

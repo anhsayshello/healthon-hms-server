@@ -18,13 +18,13 @@ export default async function updateAppointmentById(
 
   const appointment = await prisma.appointment.findUnique({
     where: { id },
-    include: { medical: { select: { id: true } } },
+    include: { medical_records: { select: { id: true } } },
   });
   if (!appointment) {
     throw new AppError("Appointment not found", 404);
   }
 
-  const hasMedicalRecord = appointment.medical.length > 0;
+  const hasMedicalRecord = appointment.medical_records.length > 0;
 
   if (appointment.status === AppointmentStatus.COMPLETED) {
     throw new AppError("This appointment has already been completed", 400);

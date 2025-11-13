@@ -5,20 +5,9 @@ export default async function createVitalSigns(
   appointment_id: number,
   props: Omit<
     VitalSigns,
-    "id" | "patient_id" | "medical_id" | "created_at" | "updated_at"
+    "id" | "patient_id" | "medical_record_id" | "created_at" | "updated_at"
   >
 ) {
-  const {
-    body_temperature,
-    systolic,
-    diastolic,
-    heart_rate,
-    respiratory_rate,
-    oxygen_saturation,
-    weight,
-    height,
-  } = props;
-
   return await prisma.$transaction(async (tx) => {
     const appointment = await tx.appointment.findUniqueOrThrow({
       where: { id: appointment_id, status: AppointmentStatus.SCHEDULED },
@@ -49,15 +38,8 @@ export default async function createVitalSigns(
 
     const newVitalSigns = await tx.vitalSigns.create({
       data: {
-        medical_id: medicalRecord.id,
-        body_temperature,
-        systolic,
-        diastolic,
-        heart_rate,
-        respiratory_rate,
-        oxygen_saturation,
-        weight,
-        height,
+        medical_record_id: medicalRecord.id,
+        ...props,
       },
     });
 

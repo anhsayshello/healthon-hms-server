@@ -7,17 +7,7 @@ import prisma from "../../config/db";
 export default async function createStaff(
   props: Omit<Staff, "uid" | "status" | "created_at" | "updated_at">
 ) {
-  const {
-    email,
-    first_name,
-    last_name,
-    phone,
-    address,
-    department,
-    license_number,
-    photo_url,
-    role,
-  } = props;
+  const { email, first_name, last_name, phone, photo_url, role } = props;
 
   let staffUid = "";
 
@@ -49,15 +39,7 @@ export default async function createStaff(
   const newStaff = await prisma.staff.create({
     data: {
       uid: staffUid,
-      email,
-      first_name,
-      last_name,
-      phone,
-      address,
-      department,
-      license_number,
-      photo_url,
-      role,
+      ...props,
     },
   });
 

@@ -32,7 +32,7 @@ export default async function upsertPatient(
   } = props;
   let user;
   try {
-    user = await getAuth().getUser(uid);
+    user = await getAuth(app).getUser(uid);
   } catch {
     throw new AppError("User not found", 404);
   }

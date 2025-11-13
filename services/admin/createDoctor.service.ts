@@ -20,18 +20,7 @@ export default async function createDoctor(
     "uid" | "availability_status" | "created_at" | "updated_at"
   >
 ) {
-  const {
-    email,
-    first_name,
-    last_name,
-    specialization,
-    license_number,
-    phone,
-    address,
-    department,
-    photo_url,
-    type,
-  } = doctor;
+  const { email, first_name, last_name, phone, photo_url } = doctor;
 
   let doctorUid = "";
 
@@ -62,16 +51,7 @@ export default async function createDoctor(
   const newDoctor = await prisma.doctor.create({
     data: {
       uid: doctorUid,
-      email,
-      first_name,
-      last_name,
-      specialization,
-      license_number,
-      phone,
-      address,
-      department,
-      photo_url,
-      type,
+      ...doctor,
       availability_status: Status.ACTIVE,
       working_days: {
         create: working_days.map((day) => ({

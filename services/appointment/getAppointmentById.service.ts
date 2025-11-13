@@ -7,6 +7,7 @@ export default async function getAppointmentById(id: number) {
     include: {
       doctor: true,
       patient: true,
+      medical_records: { select: { id: true } },
     },
   });
 

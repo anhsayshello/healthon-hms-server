@@ -3,13 +3,13 @@ import AppError from "../../utils/app-error";
 
 export default async function createLabRequest(
   service_id: number,
-  medical_id: number
+  medical_record_id: number
 ) {
   const labReq = await prisma.labTest.findUnique({
     where: {
-      service_id_medical_id: {
+      service_id_medical_record_id: {
         service_id,
-        medical_id,
+        medical_record_id,
       },
     },
   });
@@ -21,7 +21,7 @@ export default async function createLabRequest(
   const data = await prisma.labTest.create({
     data: {
       service_id,
-      medical_id,
+      medical_record_id,
       test_date: new Date(),
     },
   });

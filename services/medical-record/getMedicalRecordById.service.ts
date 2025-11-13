@@ -7,17 +7,21 @@ export default async function getMedicalRecordById(id: number) {
       patient: true,
       appointment: {
         select: {
+          status: true,
           reason: true,
         },
       },
       vital_signs: true,
-      diagnosis: true,
-      lab_test: {
+      diagnoses: true,
+      lab_tests: {
         include: {
           service: true,
+          technician: true,
         },
       },
-      prescriptions: true,
+      prescriptions: {
+        include: { medication: { select: { medication_name: true } } },
+      },
     },
   });
 

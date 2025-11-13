@@ -15,7 +15,7 @@ nurseRouter.post("/vital-signs", async (req, res, next) => {
       appointment_id: number;
       props: Omit<
         VitalSigns,
-        "id" | "patient_id" | "medical_id" | "created_at" | "updated_at"
+        "id" | "patient_id" | "medical_record_id" | "created_at" | "updated_at"
       >;
     };
     const result = await nurseService.createVitalSigns(appointment_id, props);

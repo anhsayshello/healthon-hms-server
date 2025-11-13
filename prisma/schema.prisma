@@ -66,12 +66,12 @@ enum Currency {
 enum PaymentMethod {
   CASH
   CARD
+  BANK_TRANSFER
 }
 
 enum PaymentStatus {
   PAID
   UNPAID
-  PART  
 }
 
 model Patient {
@@ -99,7 +99,7 @@ model Patient {
   photo_url                String?
 
   appointments             Appointment[]
-  medical                  MedicalRecord[]
+  medical_records          MedicalRecord[]
   payments                 Payment[]
 
   created_at                DateTime          @default(now())
@@ -122,8 +122,8 @@ model Doctor {
   type                     JobType @default(FULL)
   working_days             WorkingDays[]
   appointments             Appointment[]
-  diagnosis                Diagnosis[]
-  medical_records         MedicalRecord[]
+  diagnoses                Diagnosis[]
+  medical_records          MedicalRecord[]
   
   created_at                DateTime          @default(now())
   updated_at                DateTime          @updatedAt
@@ -171,14 +171,14 @@ model Appointment {
   status           AppointmentStatus    @default(PENDING)
   type             String
   note             String?
+  reason           String?
 
   patient          Patient          @relation(fields: [patient_id], references: [uid], onDelete: Cascade)
   doctor           Doctor           @relation(fields: [doctor_id], references: [uid], onDelete: Cascade)
 
   payment          Payment?
-  medical          MedicalRecord[]
+  medical_records          MedicalRecord[]
 
-  reason           String?
   created_at       DateTime         @default(now())
   updated_at       DateTime         @updatedAt
 }
@@ -189,7 +189,7 @@ model Payment {
   appointment_id  Int               @unique
   bill_date       DateTime
   payment_date    DateTime?
-  discount        Float
+  discount        Float          @default(0)
   total_amount    Float
   amount_paid     Float
 
@@ -200,7 +200,7 @@ model Payment {
   appointment     Appointment           @relation(fields: [appointment_id], references: [id], onDelete: Cascade)
   patient         Patient               @relation(fields: [patient_id], references: [uid], onDelete: Cascade)
   lab_bills       LabBill[]         
-  medication_bills MedicationBill[]
+  prescription_bills PrescriptionBill[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -224,13 +224,13 @@ model LabBill {
 
 model Service {
   id           Int           @id @default(autoincrement())
-  service_name String
+  service_name String         @unique
   description  String
   price        Float
   currency     Currency    @default(VND)
 
   lab_tests      LabTest[]
-  lab_bills        LabBill[]
+  lab_bills      LabBill[]
 
   created_at   DateTime      @default(now())
   updated_at   DateTime      @updatedAt
@@ -239,7 +239,7 @@ model Service {
 model LabTest {
   id             Int       @id @default(autoincrement())
   service_id     Int      
-  medical_id     Int
+  medical_record_id     Int
   technician_id  String?
   test_date      DateTime
   result         String?
@@ -247,13 +247,13 @@ model LabTest {
   notes          String?
 
   service         Service  @relation(fields: [service_id], references: [id])
-  medical_record  MedicalRecord @relation(fields: [medical_id], references: [id], onDelete: Cascade)
+  medical_record  MedicalRecord @relation(fields: [medical_record_id], references: [id], onDelete: Cascade)
   technician      Staff?    @relation(fields: [technician_id], references: [uid])
 
   created_at     DateTime  @default(now())
   updated_at     DateTime  @updatedAt
 
-  @@unique([service_id, medical_id])
+  @@unique([service_id, medical_record_id])
 }
 
 model MedicalRecord {
@@ -263,15 +263,15 @@ model MedicalRecord {
   doctor_id      String
   treatment_plan String?
   lab_request    String?
+  notes          String?
 
   appointment    Appointment  @relation(fields: [appointment_id], references: [id], onDelete: Cascade)
   doctor         Doctor       @relation(fields: [doctor_id], references: [uid], onDelete: Cascade)
   patient        Patient      @relation(fields: [patient_id], references: [uid], onDelete: Cascade)
-  lab_test       LabTest[]
-  notes          String?
 
+  lab_tests       LabTest[]
   vital_signs    VitalSigns[]
-  diagnosis      Diagnosis[]
+  diagnoses      Diagnosis[]
   prescriptions  Prescription[]
 
   created_at     DateTime     @default(now())
@@ -280,7 +280,7 @@ model MedicalRecord {
 
 model VitalSigns {
   id                Int             @id @default(autoincrement())
-  medical_id        Int
+  medical_record_id        Int
   body_temperature  Float
   systolic          Int
   diastolic         Int
@@ -290,7 +290,7 @@ model VitalSigns {
   weight            Float
   height            Float
 
-  medical_record    MedicalRecord  @relation(fields: [medical_id], references: [id], onDelete: Cascade)
+  medical_record    MedicalRecord  @relation(fields: [medical_record_id], references: [id], onDelete: Cascade)
 
   created_at        DateTime        @default(now())
   updated_at        DateTime        @updatedAt
@@ -298,7 +298,7 @@ model VitalSigns {
 
 model Diagnosis {
   id                       Int             @id @default(autoincrement())
-  medical_id               Int
+  medical_record_id        Int
   doctor_id                String
   symptoms                 String
   diagnosis                String
@@ -306,7 +306,7 @@ model Diagnosis {
   follow_up_plan           String?
 
   doctor                   Doctor          @relation(fields: [doctor_id], references: [uid])
-  medical                  MedicalRecord  @relation(fields: [medical_id], references: [id], onDelete: Cascade)
+  medical_record                  MedicalRecord  @relation(fields: [medical_record_id], references: [id], onDelete: Cascade)
 
   created_at               DateTime        @default(now())
   updated_at               DateTime        @updatedAt
@@ -314,15 +314,15 @@ model Diagnosis {
 
 model Medication {
   id             Int       @id @default(autoincrement())
-  medication_name String
+  medication_name String    @unique
   description    String?
   unit_price     Float     
+  currency       Currency    @default(VND)
   unit_type      String    
   manufacturer   String?
   stock_quantity Int       @default(0) 
   
   prescriptions     Prescription[]
-  medication_bills  MedicationBill[]
   
   created_at     DateTime  @default(now())
   updated_at     DateTime  @updatedAt
@@ -330,7 +330,7 @@ model Medication {
 
 model Prescription {
   id             Int             @id @default(autoincrement())
-  medical_id     Int
+  medical_record_id     Int
   medication_id  Int             
   quantity       Int             
   dosage         String
@@ -338,22 +338,22 @@ model Prescription {
   duration       String
   instructions   String?
 
-  medical_record MedicalRecord   @relation(fields: [medical_id], references: [id], onDelete: Cascade)
+  medical_record MedicalRecord   @relation(fields: [medical_record_id], references: [id], onDelete: Cascade)
   medication     Medication      @relation(fields: [medication_id], references: [id]) 
 
   created_at     DateTime        @default(now())
   updated_at     DateTime        @updatedAt
 }
 
-model MedicationBill {
+model PrescriptionBill {
   id            Int       @id @default(autoincrement())
   payment_id       Int
-  medication_id Int
+  prescription_id Int
   quantity      Int 
   unit_cost     Float
   total_cost    Float
 
-  medication    Medication      @relation(fields: [medication_id], references: [id])
+  prescription  Prescription    @relation(fields: [prescription_id], references: [id])
   payment       Payment         @relation(fields: [payment_id], references: [id], onDelete: Cascade)
 
   created_at    DateTime  @default(now())

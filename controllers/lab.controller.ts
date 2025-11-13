@@ -53,8 +53,11 @@ labRouter.post("/services", async (req, res, next) => {
 
 labRouter.post("/requests", async (req, res, next) => {
   try {
-    const { service_id, medical_id } = req.body;
-    const result = await labService.createLabRequest(service_id, medical_id);
+    const { service_id, medical_record_id } = req.body;
+    const result = await labService.createLabRequest(
+      service_id,
+      medical_record_id
+    );
     return res.status(201).json(result);
   } catch (error) {
     next(error);

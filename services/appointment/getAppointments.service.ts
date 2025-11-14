@@ -30,42 +30,43 @@ export default async function getAppointments(params: AppointmentParams) {
     ],
   };
 
-  const appointments = await prisma.appointment.findMany({
-    where: whereCondition,
+  const [appointments, totalRecords] = await Promise.all([
+    prisma.appointment.findMany({
+      where: whereCondition,
 
-    include: {
-      patient: {
-        select: {
-          uid: true,
-          email: true,
-          first_name: true,
-          last_name: true,
-          phone: true,
-          address: true,
-          gender: true,
-          photo_url: true,
+      include: {
+        patient: {
+          select: {
+            uid: true,
+            email: true,
+            first_name: true,
+            last_name: true,
+            phone: true,
+            address: true,
+            gender: true,
+            photo_url: true,
+          },
+        },
+        doctor: {
+          select: {
+            uid: true,
+            first_name: true,
+            last_name: true,
+            specialization: true,
+            department: true,
+            phone: true,
+            photo_url: true,
+          },
         },
       },
-      doctor: {
-        select: {
-          uid: true,
-          first_name: true,
-          last_name: true,
-          specialization: true,
-          department: true,
-          phone: true,
-          photo_url: true,
-        },
-      },
-    },
-    orderBy: [{ appointment_date: "desc" }, { time: "asc" }],
-    skip: SKIP,
-    take: LIMIT,
-  });
-
-  const totalRecords = await prisma.appointment.count({
-    where: whereCondition,
-  });
+      orderBy: [{ appointment_date: "desc" }, { time: "asc" }],
+      skip: SKIP,
+      take: LIMIT,
+    }),
+    prisma.appointment.count({
+      where: whereCondition,
+    }),
+  ]);
 
   const totalPages = Math.ceil(totalRecords / LIMIT);
 

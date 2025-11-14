@@ -8,11 +8,11 @@ const medicalRecordRouter = Router();
 
 medicalRecordRouter.use(...authMiddlewares);
 
-medicalRecordRouter.get("/today", async (req, res, next) => {
+medicalRecordRouter.get("/doctor", async (req, res, next) => {
   try {
     const params: SearchQueryParams = req.query;
     const uid = req?.uid as string;
-    const result = await medicalRecordService.getTodayMedicalRecords(
+    const result = await medicalRecordService.getDoctorMedicalRecords(
       uid,
       params
     );

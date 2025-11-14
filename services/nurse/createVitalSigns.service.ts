@@ -9,7 +9,7 @@ export default async function createVitalSigns(
   >
 ) {
   return await prisma.$transaction(async (tx) => {
-    const appointment = await tx.appointment.findUniqueOrThrow({
+    const appointment = await tx.appointment.findFirstOrThrow({
       where: { id: appointment_id, status: AppointmentStatus.SCHEDULED },
       select: {
         id: true,

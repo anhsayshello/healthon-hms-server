@@ -1,14 +1,26 @@
-import { LabTestStatus } from "@prisma/client";
+import { LabTestStatus, Prisma } from "@prisma/client";
 import prisma from "../../config/db";
 import type { SearchQueryParams } from "../../types";
 import normalizePagination from "../../utils/normalize-pagination";
+import { searchLabTest } from "../../utils/search-filters";
 
 export default async function getLabTestRequests(params: SearchQueryParams) {
-  const { page, limit } = params;
+  const { query, page, limit } = params;
   const { PAGENUMBER, SKIP, LIMIT } = normalizePagination(page, limit);
 
-  const whereCondition = {
-    status: { in: [LabTestStatus.PENDING, LabTestStatus.IN_PROGRESS] },
+  const whereCondition: Prisma.LabTestWhereInput = {
+    AND: [
+      { status: { in: [LabTestStatus.PENDING, LabTestStatus.IN_PROGRESS] } },
+      ...(query?.trim()
+        ? [
+            {
+              OR: [searchLabTest(query)].filter(
+                Boolean
+              ) as Prisma.LabTestWhereInput[],
+            },
+          ]
+        : []),
+    ],
   };
 
   const [labRequests, totalRecords] = await Promise.all([

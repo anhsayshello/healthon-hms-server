@@ -2,7 +2,7 @@ import { AppointmentStatus, Prisma } from "@prisma/client";
 import prisma from "../../config/db";
 import type { SearchQueryParams } from "../../types";
 import normalizePagination from "../../utils/normalize-pagination";
-import { searchPatient } from "../../utils/search-filters";
+import { searchDoctor, searchPatient } from "../../utils/search-filters";
 import { endOfDay, startOfDay } from "date-fns";
 
 export default async function getTodayVitalSigns(params: SearchQueryParams) {
@@ -19,7 +19,7 @@ export default async function getTodayVitalSigns(params: SearchQueryParams) {
     },
     status: AppointmentStatus.SCHEDULED,
     ...(query?.trim() && {
-      OR: [searchPatient(query)].filter(
+      OR: [searchDoctor(query), searchPatient(query)].filter(
         Boolean
       ) as Prisma.AppointmentWhereInput[],
     }),
@@ -52,7 +52,7 @@ export default async function getTodayVitalSigns(params: SearchQueryParams) {
             specialization: true,
           },
         },
-        medical: {
+        medical_records: {
           select: {
             id: true,
             vital_signs: {

@@ -1,13 +1,18 @@
+import type { Prisma } from "@prisma/client";
 import prisma from "../../config/db";
 import type { SearchQueryParams } from "../../types";
 import normalizePagination from "../../utils/normalize-pagination";
+import { searchLabTest } from "../../utils/search-filters";
 
 export default async function getLabTests(params: SearchQueryParams) {
-  const { page, limit } = params;
+  const { query, page, limit } = params;
   const { PAGENUMBER, SKIP, LIMIT } = normalizePagination(page, limit);
+
+  const whereCondition: Prisma.LabTestWhereInput = searchLabTest(query) ?? {};
 
   const [labTests, totalRecords] = await Promise.all([
     prisma.labTest.findMany({
+      where: whereCondition,
       include: {
         medical_record: {
           include: {
@@ -22,7 +27,7 @@ export default async function getLabTests(params: SearchQueryParams) {
       take: LIMIT,
       orderBy: { created_at: "asc" },
     }),
-    prisma.labTest.count(),
+    prisma.labTest.count({ where: whereCondition }),
   ]);
 
   const totalPages = Math.ceil(totalRecords / LIMIT);

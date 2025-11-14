@@ -2,30 +2,21 @@ import type { Prisma } from "@prisma/client";
 import type { SearchQueryParams } from "../../types";
 import normalizePagination from "../../utils/normalize-pagination";
 import prisma from "../../config/db";
+import { searchDoctor, searchPatient } from "../../utils/search-filters";
 
 export default async function getMedicalRecords(params: SearchQueryParams) {
   const { query, page, limit } = params;
   const { PAGENUMBER, LIMIT, SKIP } = normalizePagination(page, limit);
 
-  const whereCondition: Prisma.MedicalRecordWhereInput = query
-    ? {
-        OR: [
-          {
-            patient: {
-              first_name: { contains: query, mode: "insensitive" },
-            },
-          },
-          {
-            patient: {
-              last_name: { contains: query, mode: "insensitive" },
-            },
-          },
-          {
-            patient_id: { contains: query, mode: "insensitive" },
-          },
-        ],
-      }
-    : {};
+  const whereCondition: Prisma.MedicalRecordWhereInput = {
+    ...(query?.trim()
+      ? {
+          OR: [searchPatient(query), searchDoctor(query)].filter(
+            Boolean
+          ) as Prisma.MedicalRecordWhereInput[],
+        }
+      : {}),
+  };
 
   const [patients, totalRecords] = await Promise.all([
     prisma.medicalRecord.findMany({
@@ -39,7 +30,15 @@ export default async function getMedicalRecords(params: SearchQueryParams) {
             gender: true,
           },
         },
-        diagnoses: true,
+        doctor: {
+          select: {
+            first_name: true,
+            last_name: true,
+            photo_url: true,
+            specialization: true,
+          },
+        },
+        appointment: { select: { status: true } },
       },
       skip: SKIP,
       take: LIMIT,

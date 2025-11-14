@@ -28,6 +28,7 @@ nurseRouter.post("/vital-signs", async (req, res, next) => {
 nurseRouter.get("/vital-signs", async (req, res, next) => {
   try {
     const params: SearchQueryParams = req.query;
+    console.log(params);
     const result = await nurseService.getTodayVitalSigns(params);
     return res.status(200).json(result);
   } catch (error) {

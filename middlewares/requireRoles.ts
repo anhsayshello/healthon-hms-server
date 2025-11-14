@@ -17,8 +17,10 @@ const requireRoles = (allowedRoles: Role[]) => {
 };
 
 export const requireAdmin = requireRoles([Role.ADMIN]);
-export const requireNurse = requireRoles([Role.NURSE]);
 export const requireDoctor = requireRoles([Role.DOCTOR]);
+export const requireNurse = requireRoles([Role.NURSE]);
+export const requireLabTechnician = requireRoles([Role.LAB_TECHNICIAN]);
+export const requireCashier = requireRoles([Role.CASHIER]);
 export const requireStaff = requireRoles([
   Role.ADMIN,
   Role.NURSE,

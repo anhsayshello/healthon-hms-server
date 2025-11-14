@@ -11,7 +11,7 @@ staffRouter.get("/", async (req, res, next) => {
   try {
     const params: AppointmentParams = req.query;
     const result = await staffService.getStaffs(params);
-    return res.status(201).json(result);
+    return res.status(200).json(result);
   } catch (error) {
     next(error);
   }

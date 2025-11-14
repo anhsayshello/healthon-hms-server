@@ -26,6 +26,21 @@ export const searchAppointmentFields = (
   ];
 };
 
+export const searchPaymentFields = (
+  query?: string
+): Prisma.PaymentWhereInput | null => {
+  if (!query?.trim()) return null;
+
+  return {
+    OR: [
+      { notes: { contains: query, mode: Prisma.QueryMode.insensitive } },
+      {
+        receipt_number: { contains: query, mode: Prisma.QueryMode.insensitive },
+      },
+    ],
+  };
+};
+
 export const searchDoctorDirect = (
   query?: string
 ): Prisma.DoctorWhereInput | null => {
@@ -80,6 +95,30 @@ export const searchStaffDirect = (
   );
 };
 
+export const searchServiceDirect = (
+  query?: string
+): Prisma.ServiceWhereInput | null => {
+  const trimmedQuery = query?.trim();
+  if (!trimmedQuery) return null;
+
+  return createMultiFieldSearch<Prisma.ServiceWhereInput>(
+    ["service_name", "description"],
+    trimmedQuery
+  );
+};
+
+export const searchLabTestDirect = (
+  query?: string
+): Prisma.LabTestWhereInput | null => {
+  const trimmedQuery = query?.trim();
+  if (!trimmedQuery) return null;
+
+  return createMultiFieldSearch<Prisma.LabTestWhereInput>(
+    ["result", "notes", "technician_id"],
+    trimmedQuery
+  );
+};
+
 export const searchDoctor = (
   query: string
 ): Prisma.AppointmentWhereInput | null => {
@@ -96,4 +135,26 @@ export const searchPatient = (
   if (!directSearch) return null;
 
   return { patient: directSearch };
+};
+
+export const searchLabTest = (
+  query?: string
+): Prisma.LabTestWhereInput | null => {
+  const trimmedQuery = query?.trim();
+  if (!trimmedQuery) return null;
+
+  return {
+    OR: [
+      searchLabTestDirect(trimmedQuery),
+      {
+        service: searchServiceDirect(trimmedQuery),
+      },
+      {
+        medical_record: {
+          patient: searchPatientDirect(trimmedQuery),
+          doctor: searchDoctorDirect(trimmedQuery),
+        },
+      },
+    ].filter(Boolean) as Prisma.LabTestWhereInput[],
+  };
 };

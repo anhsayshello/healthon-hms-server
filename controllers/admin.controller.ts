@@ -19,6 +19,7 @@ adminRouter.post("/doctor", async (req, res, next) => {
         "uid" | "availability_status" | "created_at" | "updated_at"
       >;
     };
+    console.log(doctor, "doctor");
     const result = await adminService.createDoctor(
       working_days,
       start_time,

@@ -37,4 +37,38 @@ doctorRouter.get("/:uid", async (req, res, next) => {
   }
 });
 
+doctorRouter.patch(
+  "/appointments/:appointment_id/start_consultation",
+  async (req, res, next) => {
+    try {
+      const { appointment_id } = req.params;
+      const uid = req.uid as string;
+      const result = await doctorService.startConsultation(
+        uid,
+        Number(appointment_id)
+      );
+      return res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+doctorRouter.patch(
+  "/appointments/:appointment_id/complete_consultation",
+  async (req, res, next) => {
+    try {
+      const { appointment_id } = req.params;
+      const uid = req.uid as string;
+      const result = await doctorService.completeConsultation(
+        uid,
+        Number(appointment_id)
+      );
+      return res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 export default doctorRouter;

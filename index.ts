@@ -12,6 +12,7 @@ import medicalRecordRouter from "./controllers/medicalRecord.controller";
 import nurseRouter from "./controllers/nurse.controller";
 import labRouter from "./controllers/lab.controller";
 import medicationRouter from "./controllers/medication.controller";
+import cashierRouter from "./controllers/cashier.controller";
 
 const PORT = 3000;
 const app = express();
@@ -33,6 +34,7 @@ app.use("/appointment", appointmentRouter);
 app.use("/medication", medicationRouter);
 app.use("/medical-record", medicalRecordRouter);
 app.use("/lab", labRouter);
+app.use("/cashier", cashierRouter);
 
 app.use(unknownEndpoint);
 app.use(errorHandler);

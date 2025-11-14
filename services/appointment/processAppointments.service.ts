@@ -38,6 +38,8 @@ export default async function processAppointments(appointments: Appointment[]) {
       SCHEDULED: 0,
       COMPLETED: 0,
       CANCELLED: 0,
+      IN_CONSULTATION: 0,
+      CONSULTATION_COMPLETED: 0,
     }
   );
   return { appointmentCounts, monthlyData };

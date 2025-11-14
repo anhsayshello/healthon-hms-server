@@ -1,11 +1,4 @@
-import {
-  type Doctor,
-  Prisma,
-  Role,
-  type Staff,
-  Status,
-  Weekday,
-} from "@prisma/client";
+import { type Doctor, Role, Status, Weekday } from "@prisma/client";
 import { FirebaseAuthError, getAuth } from "firebase-admin/auth";
 import app from "../../config/firebase";
 import AppError from "../../utils/app-error";

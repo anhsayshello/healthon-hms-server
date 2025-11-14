@@ -21,6 +21,8 @@ export default function filters(
     scheduled: AppointmentStatus.SCHEDULED,
     cancelled: AppointmentStatus.CANCELLED,
     completed: AppointmentStatus.COMPLETED,
+    in_consultation: AppointmentStatus.IN_CONSULTATION,
+    consultation_completed: AppointmentStatus.CONSULTATION_COMPLETED,
   };
 
   const normalizedStatus = status?.toLowerCase() ?? "";

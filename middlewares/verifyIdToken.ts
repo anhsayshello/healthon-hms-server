@@ -1,8 +1,13 @@
 import { getAuth } from "firebase-admin/auth";
 import { getTokenFrom } from "../utils/utils";
 import AppError from "../utils/app-error";
+import type { Request, Response, NextFunction } from "express";
 
-export const verifyIdToken = async (req, res, next) => {
+export const verifyIdToken = async (
+  req: Request,
+  _res: Response,
+  next: NextFunction
+) => {
   const idToken = getTokenFrom(req);
 
   if (!idToken) {

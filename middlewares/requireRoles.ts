@@ -1,9 +1,10 @@
 import { getAuth } from "firebase-admin/auth";
 import app from "../config/firebase";
 import { Role } from "@prisma/client";
+import type { Request, Response, NextFunction } from "express";
 
 const requireRoles = (allowedRoles: Role[]) => {
-  return async (req, res, next) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
     const currentUser = await getAuth(app).getUser(req.uid);
     const role = currentUser.customClaims?.role as Role;
 
@@ -27,3 +28,5 @@ export const requireStaff = requireRoles([
   Role.LAB_TECHNICIAN,
   Role.CASHIER,
 ]);
+
+export const requireAdminOrCashier = requireRoles([Role.ADMIN, Role.CASHIER]);

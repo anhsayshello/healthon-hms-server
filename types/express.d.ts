@@ -1,7 +1,11 @@
 import "express";
 
-declare module "express-serve-static-core" {
-  interface Request {
-    uid?: string;
+import { Request } from "express";
+
+declare global {
+  namespace Express {
+    interface Request {
+      uid: string;
+    }
   }
 }

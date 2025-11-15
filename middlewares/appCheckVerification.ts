@@ -1,8 +1,13 @@
 import { getAppCheck } from "firebase-admin/app-check";
 import AppError from "../utils/app-error";
 import app from "../config/firebase";
+import type { Request, Response, NextFunction } from "express";
 
-export const appCheckVerification = async (req, res, next) => {
+export const appCheckVerification = async (
+  req: Request,
+  _res: Response,
+  next: NextFunction
+) => {
   const appCheckToken = req.header("X-Firebase-AppCheck");
 
   if (!appCheckToken) {

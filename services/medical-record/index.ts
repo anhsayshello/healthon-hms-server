@@ -9,10 +9,12 @@ import updatePrescription from "./prescription/updatePrescription.service";
 import deletePrescription from "./prescription/deletePrescription.service";
 import deleteDiagnosis from "./diagnosis/deleteDiagnosis.service";
 import getDoctorMedicalRecords from "./getDoctorMedicalRecords.service";
+import getPatientMedicalRecords from "./getPatientMedicalRecords.service";
 
 const medicalRecordService = {
   getMedicalRecords,
   getDoctorMedicalRecords,
+  getPatientMedicalRecords,
   getMedicalRecordById,
   // diagnosis,
   createDiagnosis,

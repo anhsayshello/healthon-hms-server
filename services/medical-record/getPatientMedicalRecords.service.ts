@@ -4,7 +4,7 @@ import normalizePagination from "../../utils/normalize-pagination";
 import prisma from "../../config/db";
 import { searchPatient } from "../../utils/search-filters";
 
-export default async function getDoctorMedicalRecords(
+export default async function getPatientMedicalRecords(
   uid: string,
   params: SearchQueryParams
 ) {
@@ -12,7 +12,7 @@ export default async function getDoctorMedicalRecords(
   const { PAGENUMBER, LIMIT, SKIP } = normalizePagination(page, limit);
 
   const whereCondition: Prisma.MedicalRecordWhereInput = {
-    doctor_id: uid,
+    patient_id: uid,
     ...(query?.trim()
       ? {
           OR: [searchPatient(query)].filter(

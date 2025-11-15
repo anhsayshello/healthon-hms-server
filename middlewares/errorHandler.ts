@@ -1,6 +1,12 @@
 import AppError from "../utils/app-error";
+import type { Request, Response, NextFunction } from "express";
 
-export default function errorHandler(error, _req, res, next) {
+export default function errorHandler(
+  error,
+  _req: Request,
+  res: Response,
+  next: NextFunction
+) {
   if (error instanceof AppError || error.name === "AppError") {
     return res.status(error.status).json({ error: error.message });
   } else if (error.code === "auth/argument-error") {

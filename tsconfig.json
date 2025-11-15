@@ -7,13 +7,12 @@
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "NodeNext", // Đổi từ "esnext"
-    "target": "ES2022", // Giữ nguyên hoặc ES2022
-    "moduleResolution": "NodeNext", // Đổi từ "bundler"
+    "module": "esnext",
+    "target": "esnext",
     // For nodejs:
     "lib": ["esnext"],
     "types": ["node"],
-    // "moduleResolution": "bundler",
+    "moduleResolution": "bundler",
     // and npm install -D @types/node
 
     // Other Outputs

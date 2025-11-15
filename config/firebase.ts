@@ -1,7 +1,7 @@
-import { applicationDefault, initializeApp } from "firebase-admin/app";
+import { cert, initializeApp } from "firebase-admin/app";
 
 const app = initializeApp({
-  credential: applicationDefault(),
+  credential: cert(JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS!)),
   projectId: "healthon-hms",
 });
 

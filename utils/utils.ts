@@ -1,7 +1,8 @@
 import { Weekday, type AppointmentStatus } from "@prisma/client";
 import { format, getMonth } from "date-fns";
+import type { Request } from "express";
 
-export const getTokenFrom = (req) => {
+export const getTokenFrom = (req: Request) => {
   const authorization = req.get("authorization");
   if (authorization && authorization.startsWith("Bearer ")) {
     return authorization.replace("Bearer ", "");

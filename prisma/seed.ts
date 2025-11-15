@@ -108,6 +108,10 @@ async function seed() {
     const patient = patients[Math.floor(Math.random() * patients.length)];
     const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
 
+    if (!doctor || !patient) {
+      throw new Error("Doctors or patients array is empty!");
+    }
+
     await prisma.appointment.create({
       data: {
         patient_id: patient.uid,

@@ -17,12 +17,18 @@ import cashierRouter from "./controllers/cashier.controller";
 const PORT = 3000;
 const app = express();
 
-app.use(express.json());
 app.use(
   cors({
     origin: ["http://localhost:5173", "https://healthon.vercel.app"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   })
 );
+
+app.options("*", cors());
+
+app.use(express.json());
 
 app.use("/auth", authRouter);
 app.use("/admin", adminRouter);
@@ -39,6 +45,8 @@ app.use("/cashier", cashierRouter);
 app.use(unknownEndpoint);
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// app.listen(PORT, () => {
+//   console.log(`Server running on port ${PORT}`);
+// });
+
+export default app;

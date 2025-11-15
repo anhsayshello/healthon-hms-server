@@ -2,12 +2,13 @@ import { getAuth } from "firebase-admin/auth";
 import AppError from "../../utils/app-error";
 import prisma from "../../config/db";
 import { Role } from "@prisma/client";
+import app from "../../config/firebase";
 
 const authService = {
   async auth(idToken: string) {
     let decodedToken;
     try {
-      decodedToken = await getAuth().verifyIdToken(idToken);
+      decodedToken = await getAuth(app).verifyIdToken(idToken);
     } catch {
       throw new AppError("Invalid token", 401);
     }
@@ -15,7 +16,7 @@ const authService = {
 
     let userAuth;
     try {
-      userAuth = await getAuth().getUser(uid);
+      userAuth = await getAuth(app).getUser(uid);
     } catch {
       throw new AppError("User not found", 404);
     }

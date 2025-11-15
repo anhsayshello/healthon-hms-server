@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx watch index.ts",
     "lint": "eslint .",
-    "start": "node build/index.js"
+    "start": "node build/index.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

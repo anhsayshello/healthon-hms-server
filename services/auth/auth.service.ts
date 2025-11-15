@@ -6,7 +6,6 @@ import app from "../../config/firebase";
 
 const authService = {
   async auth(idToken: string) {
-    console.log(idToken, "idToken received:");
     let decodedToken;
     try {
       decodedToken = await getAuth(app).verifyIdToken(idToken);
@@ -18,8 +17,13 @@ const authService = {
     let userAuth;
     try {
       userAuth = await getAuth(app).getUser(uid);
-    } catch {
-      throw new AppError("User not found", 404);
+      console.log("✅ Firebase getUser SUCCESS:", userAuth.uid);
+    } catch (error: any) {
+      console.error("❌ Firebase getUser FAILED:", {
+        code: error.code,
+        message: error.message,
+      });
+      throw new AppError(`Firebase error: ${error.message}`, 404);
     }
     const role = userAuth.customClaims?.role;
 

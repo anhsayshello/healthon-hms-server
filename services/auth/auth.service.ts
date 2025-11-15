@@ -6,6 +6,7 @@ import app from "../../config/firebase";
 
 const authService = {
   async auth(idToken: string) {
+    console.log(idToken, "idToken received:");
     let decodedToken;
     try {
       decodedToken = await getAuth(app).verifyIdToken(idToken);

@@ -17,12 +17,7 @@ const authService = {
     let userAuth;
     try {
       userAuth = await getAuth(app).getUser(uid);
-      console.log("✅ Firebase getUser SUCCESS:", userAuth.uid);
     } catch (error: any) {
-      console.error("❌ Firebase getUser FAILED:", {
-        code: error.code,
-        message: error.message,
-      });
       throw new AppError(`Firebase error: ${error.message}`, 404);
     }
     const role = userAuth.customClaims?.role;

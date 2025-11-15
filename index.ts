@@ -20,7 +20,9 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://healthon.vercel.app"],
+    origin: "https://healthon.vercel.app",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Firebase-AppCheck"],
   })
 );
 

@@ -13,12 +13,13 @@ import nurseRouter from "./controllers/nurse.controller";
 import labRouter from "./controllers/lab.controller";
 import medicationRouter from "./controllers/medication.controller";
 import cashierRouter from "./controllers/cashier.controller";
+import { PORT } from "./config";
 
 const app = express();
 
 app.use(
   cors({
-    origin: "https://healthon.vercel.app",
+    origin: ["https://healthon.vercel.app", "http://localhost:5173"],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Firebase-AppCheck"],
   })
@@ -40,7 +41,6 @@ app.use("/cashier", cashierRouter);
 app.use(unknownEndpoint);
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

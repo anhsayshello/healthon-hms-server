@@ -8,21 +8,39 @@ export default async function getReceiptById(id: number) {
         select: {
           first_name: true,
           last_name: true,
+          email: true,
           phone: true,
         },
       },
       lab_bills: {
-        include: { service: true },
+        select: {
+          service: {
+            select: {
+              service_name: true,
+            },
+          },
+          unit_cost: true,
+          total_cost: true,
+        },
       },
       prescription_bills: {
-        include: {
+        select: {
           prescription: {
-            include: { medication: true },
+            select: {
+              dosage: true,
+              frequency: true,
+              duration: true,
+              medication: { select: { medication_name: true } },
+            },
           },
+          quantity: true,
+          unit_cost: true,
+          total_cost: true,
         },
       },
     },
   });
+  console.log(receipt);
 
   return receipt;
 }

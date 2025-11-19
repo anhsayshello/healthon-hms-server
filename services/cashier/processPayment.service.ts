@@ -14,7 +14,11 @@ export default async function processPayment(
     include: {
       prescription_bills: {
         include: {
-          prescription: true,
+          prescription: {
+            select: {
+              medication_id: true,
+            },
+          },
         },
       },
     },
@@ -28,15 +32,18 @@ export default async function processPayment(
   }
 
   // Calculate amounts
-  const finalAmount = payment.total_amount - discount;
-  const changeAmount = amount_paid - finalAmount;
+  const total_amount = payment.subtotal - discount;
+  const change_amount = amount_paid - total_amount;
 
-  if (changeAmount < 0) {
-    throw new AppError("Insufficient amount received", 400);
+  if (change_amount < 0) {
+    throw new AppError(
+      `Insufficient amount. Required: ${total_amount}, Received: ${amount_paid}`,
+      400
+    );
   }
 
-  const result = await prisma.$transaction(async (tx) => {
-    await tx.payment.update({
+  await prisma.$transaction(async (tx) => {
+    const updatedPayment = await tx.payment.update({
       where: { id },
       data: {
         status: PaymentStatus.PAID,
@@ -44,7 +51,8 @@ export default async function processPayment(
         payment_date: new Date(),
         amount_paid: amount_paid,
         discount: discount,
-        change_amount: changeAmount,
+        total_amount,
+        change_amount,
         notes,
         cashier_id,
       },
@@ -76,7 +84,7 @@ export default async function processPayment(
         previous_status: payment.status,
         new_status: PaymentStatus.PAID,
         changed_by: cashier_id as string,
-        notes: `Payment ${payment_method} - Received: ${amount_paid} - Change: ${changeAmount}`,
+        notes: `Payment via ${payment_method} - Paid: ${amount_paid} - Change: ${change_amount}`,
       },
     });
 
@@ -98,7 +106,7 @@ export default async function processPayment(
         },
       });
     }
-  });
 
-  return result;
+    return updatedPayment;
+  });
 }

@@ -8,28 +8,9 @@ export default async function upsertPatient(
   uid: string,
   props: Omit<Patient, "uid">
 ) {
-  const {
-    email,
-    first_name,
-    last_name,
-    date_of_birth,
-    gender,
-    phone,
-    marital_status,
-    address,
-    emergency_contact_name,
-    emergency_contact_number,
-    relation,
-    blood_group,
-    allergies,
-    medical_conditions,
-    medical_history,
-    insurance_provider,
-    insurance_number,
-    privacy_consent,
-    service_consent,
-    medical_consent,
-  } = props;
+  const { date_of_birth } = props;
+  const dobISO = new Date(`${date_of_birth}T00:00:00.000Z`);
+
   let user;
   try {
     user = await getAuth(app).getUser(uid);
@@ -43,33 +24,15 @@ export default async function upsertPatient(
   }
 
   const data = {
-    first_name: first_name,
-    last_name: last_name,
-    email,
-    date_of_birth: date_of_birth,
-    gender,
-    phone,
-    marital_status: marital_status,
-    address,
-    emergency_contact_name: emergency_contact_name,
-    emergency_contact_number: emergency_contact_number,
-    relation,
-    blood_group: blood_group,
-    allergies,
-    medical_conditions: medical_conditions,
-    medical_history: medical_history,
-    insurance_provider: insurance_provider,
-    insurance_number: insurance_number,
-    privacy_consent: privacy_consent,
-    service_consent: service_consent,
-    medical_consent: medical_consent,
+    ...props,
+    date_of_birth: dobISO,
   };
 
   const patient = await prisma.patient.upsert({
     where: {
       uid,
     },
-    update: data,
+    update: { ...props, date_of_birth: dobISO },
     create: {
       uid,
       ...data,

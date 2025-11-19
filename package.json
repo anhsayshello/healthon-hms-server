@@ -28,10 +28,12 @@
     "@prisma/client": "^6.16.2",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
+    "@types/pdfkit": "^0.17.3",
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
-    "firebase-admin": "^13.5.0"
+    "firebase-admin": "^13.5.0",
+    "pdfkit": "^0.17.2"
   }
 }

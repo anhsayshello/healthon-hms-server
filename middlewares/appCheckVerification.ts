@@ -14,8 +14,9 @@ export const appCheckVerification = async (
     throw new AppError("Unauthorized", 401);
   }
   try {
-    const appCheckClaims = await getAppCheck(app).verifyToken(appCheckToken);
-    console.log("App Check verified:", appCheckClaims);
+    // const appCheckClaims =
+    await getAppCheck(app).verifyToken(appCheckToken);
+    console.log("App Check verified");
     return next();
   } catch (error) {
     console.error("App Check verification failed:", error);

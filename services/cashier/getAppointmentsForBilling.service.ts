@@ -8,7 +8,7 @@ import prisma from "../../config/db";
 import type { SearchQueryParams } from "../../types";
 import normalizePagination from "../../utils/normalize-pagination";
 
-export default async function getAppointmentsForPayment(
+export default async function getAppointmentsForBilling(
   params: SearchQueryParams
 ) {
   const { page, limit } = params;
@@ -27,7 +27,7 @@ export default async function getAppointmentsForPayment(
     OR: [{ payment: null }, { payment: { status: PaymentStatus.UNPAID } }],
   };
 
-  const [appointmentsForPayment, totalRecords] = await Promise.all([
+  const [appointmentsForBilling, totalRecords] = await Promise.all([
     prisma.appointment.findMany({
       where: whereCondition,
       select: {
@@ -71,7 +71,7 @@ export default async function getAppointmentsForPayment(
   const totalPages = Math.ceil(totalRecords / LIMIT);
 
   return {
-    data: appointmentsForPayment,
+    data: appointmentsForBilling,
     totalPages,
     currentPage: PAGENUMBER,
     totalRecords,

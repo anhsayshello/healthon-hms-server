@@ -8,18 +8,20 @@ import {
 } from "../middlewares/requireRoles";
 import type { Payment } from "@prisma/client";
 import type { Request, Response, NextFunction } from "express";
+import printReceiptPdf from "../services/cashier/printReceiptPdf.service";
+import prisma from "../config/db";
 
 const cashierRouter = Router();
 
 cashierRouter.use(...authMiddlewares);
 
 cashierRouter.get(
-  "/payments",
+  "/billings",
   requireCashier,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const params: SearchQueryParams = req.query;
-      const result = await cashierService.getAppointmentsForPayment(params);
+      const result = await cashierService.getAppointmentsForBilling(params);
       return res.status(200).json(result);
     } catch (error) {
       next(error);
@@ -28,16 +30,13 @@ cashierRouter.get(
 );
 
 cashierRouter.post(
-  "/payments",
+  "/billings",
   requireCashier,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { appointment_id } = req.body;
       const uid = req?.uid as string;
-      const result = await cashierService.initializePayment(
-        uid,
-        appointment_id
-      );
+      const result = await cashierService.createBilling(uid, appointment_id);
       return res.status(201).json(result);
     } catch (error) {
       next(error);
@@ -46,12 +45,12 @@ cashierRouter.post(
 );
 
 cashierRouter.get(
-  "/payments/:id",
+  "/billings/:id",
   requireCashier,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const result = await cashierService.getPaymentById(Number(id));
+      const result = await cashierService.getBillingById(Number(id));
       return res.status(200).json(result);
     } catch (error) {
       next(error);
@@ -60,7 +59,7 @@ cashierRouter.get(
 );
 
 cashierRouter.patch(
-  "/payments/:id/process",
+  "/billings/:id/payment",
   requireCashier,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -104,6 +103,24 @@ cashierRouter.get(
       const { id } = req.params;
       const result = await cashierService.getReceiptById(Number(id));
       return res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+cashierRouter.get(
+  "/receipts/:id/pdf",
+  requireAdminOrCashier,
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=Receipt-${id}.pdf`
+      );
+      return printReceiptPdf(res, Number(id));
     } catch (error) {
       next(error);
     }

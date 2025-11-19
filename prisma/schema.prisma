@@ -82,7 +82,7 @@ model Patient {
   uid                      String            @id
   first_name               String
   last_name                String
-  date_of_birth            DateTime
+  date_of_birth            DateTime   @db.Date
   gender                   Gender            @default(MALE)
   email                    String            @unique
   phone                    String
@@ -171,7 +171,7 @@ model Appointment {
   id               Int              @id @default(autoincrement())
   patient_id       String
   doctor_id        String
-  appointment_date DateTime
+  appointment_date DateTime @db.Date
   time             String
   status           AppointmentStatus    @default(PENDING)
   type             String
@@ -194,13 +194,14 @@ model Payment {
   appointment_id  Int               @unique
   bill_date       DateTime
   payment_date    DateTime?
+  subtotal        Float
   discount        Float          @default(0)
   total_amount    Float
-  amount_paid     Float
-  cashier_id               String?           
-  notes                    String?           
+  amount_paid     Float           @default(0)
   refund_amount            Float             @default(0) 
   change_amount            Float             @default(0)
+  cashier_id               String?           
+  notes                    String?           
 
   payment_method  PaymentMethod     @default(CASH)
   status          PaymentStatus     @default(UNPAID)

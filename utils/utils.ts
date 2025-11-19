@@ -44,3 +44,9 @@ export default function getToday() {
 
   return map[dayIndex] as Weekday;
 }
+
+export function formatNumber(value: number) {
+  return value.toLocaleString("en-US", {
+    maximumFractionDigits: 2,
+  });
+}

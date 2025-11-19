@@ -1,33 +1,39 @@
-import { AppointmentStatus } from "@prisma/client";
+import { AppointmentStatus, type Appointment } from "@prisma/client";
 import prisma from "../../config/db";
 import AppError from "../../utils/app-error";
-import { endOfDay, startOfDay } from "date-fns";
+import { endOfDay, parse, parseISO, startOfDay } from "date-fns";
 
 export default async function createAppointment(
   patient_id: string,
-  doctor_id: string,
-  appointment_date: string,
-  time: string,
-  type: string,
-  reason: string
+  props: Pick<
+    Appointment,
+    "doctor_id" | "appointment_date" | "time" | "type" | "reason"
+  >
 ) {
-  const targetDate = new Date(appointment_date);
+  const { doctor_id, appointment_date, time, type, reason } = props;
+
+  const utcDateString = `${appointment_date}T00:00:00.000Z`;
+  const targetDateISO = new Date(utcDateString);
+
+  const startOfDayUTC = new Date(`${appointment_date}T00:00:00.000Z`);
+  const endOfDayUTC = new Date(`${appointment_date}T23:59:59.999Z`);
 
   const existingAppointment = await prisma.appointment.findFirst({
     where: {
       patient_id,
       appointment_date: {
-        gte: startOfDay(targetDate),
-        lte: endOfDay(targetDate),
+        gte: startOfDayUTC,
+        lte: endOfDayUTC,
       },
       status: { not: AppointmentStatus.CANCELLED },
     },
   });
 
   if (existingAppointment) {
-    throw new AppError(
-      `You already have an appointment on ${targetDate.toLocaleDateString()}.`
-    );
+    const displayDate = targetDateISO.toLocaleDateString("vi-VN", {
+      timeZone: "UTC",
+    });
+    throw new AppError(`You already have an appointment on ${displayDate}.`);
   }
 
   const doctor = await prisma.doctor.findUnique({
@@ -35,9 +41,10 @@ export default async function createAppointment(
     select: { first_name: true, last_name: true, working_days: true },
   });
 
-  const dayName = new Date(appointment_date)
+  const dayName = targetDateISO
     .toLocaleDateString("en-US", {
       weekday: "long",
+      timeZone: "UTC",
     })
     .toUpperCase();
 
@@ -56,7 +63,7 @@ export default async function createAppointment(
     data: {
       patient_id,
       doctor_id,
-      appointment_date,
+      appointment_date: targetDateISO,
       time,
       status: AppointmentStatus.PENDING,
       type,

@@ -3,6 +3,7 @@ import { authMiddlewares } from "../middlewares";
 import appointmentService from "../services/appointment/index";
 import type { AppointmentParams } from "../types";
 import type { Request, Response, NextFunction } from "express";
+import type { Appointment } from "@prisma/client";
 
 const appointmentRouter = Router();
 
@@ -13,15 +14,11 @@ appointmentRouter.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const uid = req.uid as string;
-      const { doctor_id, type, appointment_date, time, reason } = req.body;
-      const result = await appointmentService.createAppointment(
-        uid,
-        doctor_id,
-        appointment_date,
-        time,
-        type,
-        reason
-      );
+      const props: Pick<
+        Appointment,
+        "doctor_id" | "appointment_date" | "time" | "type" | "reason"
+      > = req.body;
+      const result = await appointmentService.createAppointment(uid, props);
       return res.status(201).json(result);
     } catch (error) {
       next(error);

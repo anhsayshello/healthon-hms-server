@@ -1,17 +1,19 @@
-import getAppointmentsForPayment from "./getAppointmentsForPayment.service";
-import getPaymentById from "./getPaymentById.service";
 import getReceiptById from "./getReceiptById.service";
 import getReceipts from "./getReceipts.service";
-import initializePayment from "./initializePayment.service";
 import processPayment from "./processPayment.service";
+import getAppointmentsForBilling from "./getAppointmentsForBilling.service";
+import getBillingById from "./getBillingById.service";
+import createBilling from "./createBilling.service";
+import printReceiptPdf from "./printReceiptPdf.service";
 
 const cashierService = {
-  getAppointmentsForPayment,
-  initializePayment,
+  getAppointmentsForBilling,
+  getBillingById,
+  createBilling,
   processPayment,
-  getPaymentById,
   getReceiptById,
   getReceipts,
+  printReceiptPdf,
 };
 
 export default cashierService;

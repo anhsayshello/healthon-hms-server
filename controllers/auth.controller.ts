@@ -1,17 +1,17 @@
 import { Router } from "express";
-import { appCheckVerification } from "../middlewares/appCheckVerification";
 import authService from "../services/auth/auth.service";
 import type { Request, Response, NextFunction } from "express";
+import { authMiddlewares } from "../middlewares";
 
 const authRouter = Router();
 
 authRouter.post(
   "/",
-  appCheckVerification,
+  authMiddlewares,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { idToken } = req.body;
-      const result = await authService.auth(idToken);
+      const uid = req.uid;
+      const result = await authService.auth(uid);
       return res.status(200).json(result);
     } catch (error) {
       next(error);

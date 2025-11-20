@@ -5,15 +5,7 @@ import { Role } from "@prisma/client";
 import app from "../../config/firebase";
 
 const authService = {
-  async auth(idToken: string) {
-    let decodedToken;
-    try {
-      decodedToken = await getAuth(app).verifyIdToken(idToken);
-    } catch {
-      throw new AppError("Invalid token", 401);
-    }
-    const uid = decodedToken.uid;
-
+  async auth(uid: string) {
     let userAuth;
     try {
       userAuth = await getAuth(app).getUser(uid);
@@ -44,11 +36,10 @@ const authService = {
         default:
           throw new AppError(`Unknown role: ${role}`, 400);
       }
-      return { idToken, role, data: user };
+      return { role, data: user };
     }
 
     return {
-      idToken: idToken,
       role: null,
       data: null,
     };

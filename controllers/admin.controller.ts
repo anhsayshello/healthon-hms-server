@@ -89,6 +89,19 @@ adminRouter.patch(
   }
 );
 
+adminRouter.get(
+  "/user/:uid",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { uid } = req.params;
+      const result = await adminService.getUserById(uid as string);
+      return res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 adminRouter.delete(
   "/:uid",
   async (req: Request, res: Response, next: NextFunction) => {

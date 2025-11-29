@@ -83,7 +83,11 @@ export default async function printReceiptPdf(res: Response, id: number) {
   doc
     .fontSize(13)
     .font("Helvetica-Bold")
-    .text(`${receipt?.total_amount} paid on ${paymentDate}`, 30, doc.y + 40);
+    .text(
+      `${formatNumber(receipt?.total_amount)} paid on ${paymentDate}`,
+      30,
+      doc.y + 40
+    );
   doc.moveDown(1.5);
   // Table header
 

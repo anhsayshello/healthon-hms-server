@@ -36,13 +36,10 @@ const authService = {
         default:
           throw new AppError(`Unknown role: ${role}`, 400);
       }
-      return { role, data: user };
+      return user;
     }
 
-    return {
-      role: null,
-      data: null,
-    };
+    return null;
   },
 };
 
